@@ -1,0 +1,4 @@
+import Link from "next/link";
+import { BarChart3, Box, FileBadge, Gift, Newspaper, ScrollText, Settings, ShoppingBag, Trophy, Users } from "lucide-react";
+const items=[["Resumen","/admin",BarChart3],["Usuarios","/admin?view=users",Users],["Productos","/admin?view=products",Box],["Pedidos","/admin?view=orders",ShoppingBag],["Certificados","/admin?view=certificates",FileBadge],["Ranking","/admin?view=ranking",Trophy],["Sorteos","/admin?view=giveaways",Gift],["Noticias","/admin?view=news",Newspaper],["Logs","/admin?view=logs",ScrollText],["Configuración","/settings",Settings]] as const;
+export function Sidebar(){return <aside className="glass-panel rounded-2xl p-3 lg:sticky lg:top-24 lg:h-fit">{items.map(([label,href,Icon])=><Link className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-slate-400 transition hover:bg-white/[.05] hover:text-white" href={href} key={label}><Icon size={17}/>{label}</Link>)}</aside>}

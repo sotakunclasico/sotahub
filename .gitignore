@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated community ranking snapshots
+data/*.json
+data/*.csv
+data/.community-ranking-cache/
+data/.community-ranking-checkpoints/
+community_ranking*.json
+community_ranking*.csv
+community_activity_log*.csv
