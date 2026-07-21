@@ -9,6 +9,7 @@ import { youtubeService } from "@/features/youtube/youtube.service";
 import { formatCompact, formatYouTubeDate } from "@/utils/format-youtube";
 
 export const metadata = { title: "Noticias" };
+export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
   const youtube = await youtubeService.getChannel();

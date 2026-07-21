@@ -4,6 +4,8 @@ import { spawn } from "node:child_process";
 import { access, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
+import bundledRankingJson from "../../../../data/community_ranking.json";
+import bundledStateJson from "../../../../data/community-ranking-state.json";
 import { isRankingExcluded } from "@/config/ranking";
 
 const rankingEntrySchema = z.object({
@@ -27,6 +29,9 @@ const stateSchema = z.object({
   error: z.string().nullable(),
 });
 
+const bundledRankingSnapshot = rankingSchema.parse(bundledRankingJson);
+const bundledStateSnapshot = stateSchema.parse(bundledStateJson);
+
 export type CommunityRankingEntry = z.infer<typeof rankingEntrySchema>;
 export type CommunityRankingState = z.infer<typeof stateSchema>;
 
@@ -45,17 +50,6 @@ function positiveNumber(value: string | undefined, fallback: number) {
 export const communityRankingIncrementalIntervalMs = Math.max(5, positiveNumber(process.env.COMMUNITY_RANKING_INCREMENTAL_MINUTES, 10)) * 60 * 1_000;
 const fullRefreshIntervalMs = positiveNumber(process.env.COMMUNITY_RANKING_FULL_INTERVAL_DAYS, 30) * 24 * 60 * 60 * 1_000;
 
-const defaultState: CommunityRankingState = {
-  lastAttemptAt: null,
-  lastSuccessfulRunAt: null,
-  lastIncrementalSuccessfulRunAt: null,
-  lastFullSuccessfulRunAt: null,
-  runMode: null,
-  status: "idle",
-  entries: 0,
-  error: null,
-};
-
 declare global {
   var __sotahubRankingRefresh: Promise<CommunityRankingState> | undefined;
 }
@@ -72,7 +66,8 @@ async function writeJsonAtomic(filePath: string, value: unknown) {
 }
 
 export async function getCommunityRankingState(): Promise<CommunityRankingState> {
-  if (!(await fileExists(statePath))) return defaultState;
+  if (process.env.SOTAHUB_RUNTIME === "cloudflare") return bundledStateSnapshot;
+  if (!(await fileExists(statePath))) return bundledStateSnapshot;
   try {
     const raw: unknown = JSON.parse(await readFile(statePath, "utf8"));
     const state = stateSchema.parse(raw);
@@ -81,15 +76,18 @@ export async function getCommunityRankingState(): Promise<CommunityRankingState>
     }
     return state;
   }
-  catch { return defaultState; }
+  catch { return bundledStateSnapshot; }
 }
 
 export async function getCommunityRanking(): Promise<CommunityRankingEntry[]> {
+  if (process.env.SOTAHUB_RUNTIME === "cloudflare") {
+    return normalizeRankingSnapshot(bundledRankingSnapshot);
+  }
   const snapshots = await Promise.all([rankingPath, partialRankingPath, legacyRankingPath].map(async (source) => {
     if (!(await fileExists(source))) return [];
     try { return rankingSchema.parse(JSON.parse(await readFile(source, "utf8"))); } catch { return []; }
   }));
-  const authoritativeSnapshot = snapshots.find((snapshot) => snapshot.length > 0) ?? [];
+  const authoritativeSnapshot = snapshots.find((snapshot) => snapshot.length > 0) ?? bundledRankingSnapshot;
   return normalizeRankingSnapshot(authoritativeSnapshot);
 }
 

@@ -6,6 +6,12 @@ export async function POST(request: Request) {
   const authorization = request.headers.get("authorization");
   const cronAuthorized = Boolean(process.env.CRON_SECRET) && authorization === `Bearer ${process.env.CRON_SECRET}`;
   if (session?.user.role !== "ADMIN" && !cronAuthorized) return Response.json({ error: "No autorizado" }, { status: 401 });
+  if (process.env.SOTAHUB_RUNTIME === "cloudflare") {
+    return Response.json(
+      { error: "El recálculo se ejecuta en el motor externo; Cloudflare sirve el último snapshot publicado." },
+      { status: 503 },
+    );
+  }
   const requestedMode = new URL(request.url).searchParams.get("mode") ?? "incremental";
   if (requestedMode !== "incremental" && requestedMode !== "full") {
     return Response.json({ error: "Modo de actualización no válido" }, { status: 400 });
