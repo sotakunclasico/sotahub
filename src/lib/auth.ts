@@ -9,7 +9,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     signIn: async ({ account, profile }) => {
       if (account?.provider !== "discord" || !account.access_token || !profile?.id) return false;
-      await ensureDiscordCommunityMember(String(profile.id), account.access_token);
+
+      try {
+        await ensureDiscordCommunityMember(String(profile.id), account.access_token);
+      } catch (error) {
+        console.error(
+          "[auth] Discord authentication succeeded, but community membership synchronization failed.",
+          error instanceof Error ? error.message : error,
+        );
+      }
+
       return true;
     },
     authorized: async ({ auth: session, request }) => {
