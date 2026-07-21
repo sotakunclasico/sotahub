@@ -29,12 +29,12 @@ El extractor local necesita Python y `scripts/community-ranking/requirements.txt
 
 El proyecto se despliega con OpenNext. En Cloudflare Builds se configura:
 
-- Comando de build: `npm run cf:build`.
+- Comando de build: `npm run build` (también se admite `npm run cf:build`).
 - Comando de deploy: `npx wrangler deploy`.
 - Directorio raíz: `/`.
 - Versión de Node.js: 22.
 
-Para probar exactamente el Worker antes de publicarlo se usa `npm run preview`. `npm run build` comprueba Next.js; `npm run cf:build` también genera `.open-next/worker.js` y los assets que consume Wrangler.
+Para probar exactamente el Worker antes de publicarlo se usa `npm run preview`. Tanto `npm run build` como `npm run cf:build` generan `.open-next/worker.js` y los assets que consume Wrangler. OpenNext ejecuta internamente `npm run next:build` para compilar Next.js con Webpack sin recursión.
 
 `wrangler.jsonc` incluye el mismo build de OpenNext como paso de seguridad. Así, `npx wrangler deploy` también genera el Worker si el panel de Cloudflare conserva temporalmente `npm run build`; aun así, se recomienda corregir el comando del panel para evitar compilar Next.js dos veces.
 
