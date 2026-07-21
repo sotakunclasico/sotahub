@@ -17,7 +17,7 @@ async function runScheduledRefresh() {
 }
 
 export function startCommunityRankingScheduler() {
-  if (globalThis.__sotahubRankingScheduler || process.env.COMMUNITY_RANKING_AUTOSTART === "false") return;
+  if (globalThis.__sotahubRankingScheduler || process.env.COMMUNITY_RANKING_AUTOSTART !== "true") return;
   void runScheduledRefresh().catch((error: unknown) => console.error("[ranking] Falló el recálculo inicial", error));
   globalThis.__sotahubRankingScheduler = setInterval(() => {
     void runScheduledRefresh().catch((error: unknown) => console.error("[ranking] Falló el recálculo programado", error));

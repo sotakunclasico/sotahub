@@ -18,6 +18,10 @@ __pycache__/
 # next.js
 /.next/
 /out/
+/.open-next/
+/.wrangler/
+.dev.vars
+cloudflare-env.d.ts
 
 # production
 /build
@@ -47,8 +51,12 @@ next-env.d.ts
 data/*.json
 data/*.csv
 data/*.log
+!data/community-ranking-state.json
+!data/community_ranking.json
+!data/youtube-channel.json
 data/.community-ranking-cache/
 data/.community-ranking-checkpoints/
 community_ranking*.json
 community_ranking*.csv
 community_activity_log*.csv
+!data/community_ranking.json
