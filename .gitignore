@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+__pycache__/
+*.pyc
 
 # next.js
 /.next/
@@ -32,6 +34,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -43,6 +46,7 @@ next-env.d.ts
 # generated community ranking snapshots
 data/*.json
 data/*.csv
+data/*.log
 data/.community-ranking-cache/
 data/.community-ranking-checkpoints/
 community_ranking*.json

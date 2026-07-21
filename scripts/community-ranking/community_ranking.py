@@ -1,3 +1,4 @@
+import argparse
 import csv
 import json
 import os
@@ -15,6 +16,7 @@ from yt_dlp import YoutubeDL
 
 CHANNEL_ID = os.getenv("YOUTUBE_CHANNEL_ID", "UCJ-vmk0-j_GC8bB_RK2vA9A")
 MAX_WORKERS = max(1, int(os.getenv("COMMUNITY_RANKING_MAX_WORKERS", "1")))
+INCREMENTAL_VIDEO_LIMIT = max(1, int(os.getenv("COMMUNITY_RANKING_INCREMENTAL_VIDEO_LIMIT", "10")))
 OUTPUT_DIRECTORY = Path.cwd()
 CACHE_DIRECTORY = OUTPUT_DIRECTORY / ".community-ranking-cache"
 CHECKPOINT_DIRECTORY = OUTPUT_DIRECTORY / ".community-ranking-checkpoints"
@@ -80,7 +82,12 @@ def get_channel_videos():
         for video_id in batch:
             item = by_id.get(video_id)
             if item:
-                videos.append({"video_id": video_id, "title": item["snippet"]["title"], "has_replay": "liveStreamingDetails" in item})
+                live_details = item.get("liveStreamingDetails", {})
+                videos.append({
+                    "video_id": video_id,
+                    "title": item["snippet"]["title"],
+                    "has_replay": bool(live_details.get("actualEndTime")),
+                })
 
     ordered = videos
     limit = int(os.getenv("COMMUNITY_RANKING_VIDEO_LIMIT", "0"))
@@ -119,34 +126,102 @@ def parse_live_chat(chat_path):
     return messages
 
 
-def process_video(video):
-    video_id = video["video_id"]
-    checkpoint_path = CHECKPOINT_DIRECTORY / f"{video_id}.json"
-    if checkpoint_path.exists():
-        try:
-            with checkpoint_path.open("r", encoding="utf-8") as stream:
-                return json.load(stream)
-        except (json.JSONDecodeError, OSError):
-            checkpoint_path.unlink(missing_ok=True)
+def load_checkpoint(checkpoint_path):
+    if not checkpoint_path.exists():
+        return None
+    try:
+        with checkpoint_path.open("r", encoding="utf-8") as stream:
+            return json.load(stream)
+    except (json.JSONDecodeError, OSError):
+        checkpoint_path.unlink(missing_ok=True)
+        return None
+
+
+def save_checkpoint(checkpoint_path, result):
+    temporary_path = checkpoint_path.with_suffix(".tmp")
+    with temporary_path.open("w", encoding="utf-8") as stream:
+        json.dump(result, stream, ensure_ascii=False)
+    temporary_path.replace(checkpoint_path)
+
+
+def seed_checkpoints_from_activity_log(channel_videos):
+    activity_path = OUTPUT_DIRECTORY / "community_activity_log.csv"
+    if not activity_path.exists():
+        return 0
+
+    videos = defaultdict(lambda: {"comments": [], "messages": []})
+    with activity_path.open("r", encoding="utf-8-sig", newline="") as stream:
+        for row in csv.DictReader(stream):
+            video_id = row.get("video_id", "").strip()
+            username = row.get("username", "").strip()
+            if not video_id or not username:
+                continue
+            if row.get("type") == "comment":
+                videos[video_id]["comments"].append((username, row.get("content", "")))
+            elif row.get("type") == "live_message":
+                videos[video_id]["messages"].append((username, row.get("content", "")))
+
+    created = 0
+    for video in channel_videos:
+        video_id = video["video_id"]
+        activity = videos.get(video_id, {"comments": [], "messages": []})
+        checkpoint_path = CHECKPOINT_DIRECTORY / f"{video_id}.json"
+        if checkpoint_path.exists():
+            continue
+        save_checkpoint(checkpoint_path, {
+            "video_id": video_id,
+            "comments": activity["comments"],
+            "messages": activity["messages"],
+            "replay_complete": True,
+            "updated_at": activity_path.stat().st_mtime,
+            "error": None,
+            "source": "activity-log-migration",
+        })
+        created += 1
+    return created
+
+
+def download_live_chat(video_id, chat_path):
     output_template = str(CACHE_DIRECTORY / f"{video_id}.%(ext)s")
     options = {**quiet_options(), "writesubtitles": True, "subtitleslangs": ["live_chat"], "outtmpl": output_template}
+    with YoutubeDL(options) as ydl:
+        ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=True)
+    messages = parse_live_chat(chat_path)
+    time.sleep(float(os.getenv("COMMUNITY_RANKING_REPLAY_DELAY", "1")))
+    return messages
+
+
+def process_video(video, mode, refresh_comments):
+    video_id = video["video_id"]
+    checkpoint_path = CHECKPOINT_DIRECTORY / f"{video_id}.json"
+    checkpoint = load_checkpoint(checkpoint_path)
     chat_path = CACHE_DIRECTORY / f"{video_id}.live_chat.json"
+
+    if checkpoint and mode == "incremental" and not refresh_comments:
+        return {**checkpoint, "error": None, "source": "checkpoint"}
+
     try:
-        comments = get_video_comments(video_id)
-        messages = []
-        if video.get("has_replay"):
-            with YoutubeDL(options) as ydl:
-                ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=True)
-            messages = parse_live_chat(chat_path)
-            time.sleep(float(os.getenv("COMMUNITY_RANKING_REPLAY_DELAY", "1")))
-        result = {"video_id": video_id, "comments": comments, "messages": messages, "error": None}
-        temporary_path = checkpoint_path.with_suffix(".tmp")
-        with temporary_path.open("w", encoding="utf-8") as stream:
-            json.dump(result, stream, ensure_ascii=False)
-        temporary_path.replace(checkpoint_path)
+        comments = get_video_comments(video_id) if mode == "full" or refresh_comments or not checkpoint else checkpoint.get("comments", [])
+        messages = checkpoint.get("messages", []) if checkpoint else []
+        replay_complete = bool(checkpoint and checkpoint.get("replay_complete", video.get("has_replay", False)))
+        if video.get("has_replay") and not replay_complete:
+            messages = download_live_chat(video_id, chat_path)
+            replay_complete = True
+        result = {
+            "video_id": video_id,
+            "comments": comments,
+            "messages": messages,
+            "replay_complete": replay_complete,
+            "updated_at": time.time(),
+            "error": None,
+            "source": "youtube",
+        }
+        save_checkpoint(checkpoint_path, result)
         return result
     except Exception as error:
-        return {"video_id": video_id, "comments": [], "messages": [], "error": str(error)}
+        if checkpoint:
+            return {**checkpoint, "error": str(error), "source": "stale-checkpoint"}
+        return {"video_id": video_id, "comments": [], "messages": [], "replay_complete": False, "error": str(error), "source": "error"}
     finally:
         chat_path.unlink(missing_ok=True)
 
@@ -227,29 +302,44 @@ def export(ranking, activity, partial=False):
         writer.writerows(activity)
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Calcula el ranking de comunidad de SotaKun.")
+    parser.add_argument("--mode", choices=("incremental", "full"), default="incremental")
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
     started = time.perf_counter()
     CACHE_DIRECTORY.mkdir(parents=True, exist_ok=True)
     CHECKPOINT_DIRECTORY.mkdir(parents=True, exist_ok=True)
     videos = get_channel_videos()
-    print(f"Vídeos únicos encontrados: {len(videos)}", flush=True)
+    seeded_checkpoints = seed_checkpoints_from_activity_log(videos)
+    if seeded_checkpoints:
+        print(f"Checkpoints migrados desde el histórico: {seeded_checkpoints}", flush=True)
+    hot_video_ids = {video["video_id"] for video in videos[:INCREMENTAL_VIDEO_LIMIT]}
+    print(f"Modo {args.mode}: {len(videos)} vídeos únicos encontrados", flush=True)
     results = []
     errors = 0
+    reused_checkpoints = 0
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(process_video, video): video for video in videos}
+        futures = {
+            executor.submit(process_video, video, args.mode, video["video_id"] in hot_video_ids): video
+            for video in videos
+        }
         for index, future in enumerate(as_completed(futures), start=1):
             result = future.result()
             results.append(result)
             errors += int(result["error"] is not None)
-            print(f"[{index}/{len(videos)}] {result['video_id']}: {len(result['comments'])} comentarios, {len(result['messages'])} mensajes" + (f" · ERROR: {result['error']}" if result["error"] else ""), flush=True)
+            reused_checkpoints += int(result.get("source") == "checkpoint")
+            if result.get("source") != "checkpoint" or result["error"]:
+                print(f"[{index}/{len(videos)}] {result['video_id']}: {len(result['comments'])} comentarios, {len(result['messages'])} mensajes" + (f" · ERROR: {result['error']}" if result["error"] else ""), flush=True)
 
     ranking, activity = build_outputs(results)
     export(ranking, activity, partial=errors > 0)
     shutil.rmtree(CACHE_DIRECTORY, ignore_errors=True)
-    if errors == 0:
-        shutil.rmtree(CHECKPOINT_DIRECTORY, ignore_errors=True)
     elapsed = time.perf_counter() - started
-    print(f"Finalizado: {len(videos)} vídeos, {sum(len(item['comments']) for item in results)} comentarios, {sum(len(item['messages']) for item in results)} mensajes, {errors} errores, {elapsed / 60:.2f} minutos", flush=True)
+    print(f"Finalizado: {len(videos)} vídeos, {reused_checkpoints} desde caché, {sum(len(item['comments']) for item in results)} comentarios, {sum(len(item['messages']) for item in results)} mensajes, {errors} errores, {elapsed / 60:.2f} minutos", flush=True)
     return 1 if errors else 0
 
 

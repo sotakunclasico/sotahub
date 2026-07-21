@@ -19,6 +19,9 @@ const rankingSchema = z.array(rankingEntrySchema);
 const stateSchema = z.object({
   lastAttemptAt: z.string().datetime().nullable(),
   lastSuccessfulRunAt: z.string().datetime().nullable(),
+  lastIncrementalSuccessfulRunAt: z.string().datetime().nullable().default(null),
+  lastFullSuccessfulRunAt: z.string().datetime().nullable().default(null),
+  runMode: z.enum(["incremental", "full"]).nullable().default(null),
   status: z.enum(["idle", "running", "success", "failed"]),
   entries: z.number().int().nonnegative(),
   error: z.string().nullable(),
@@ -27,17 +30,27 @@ const stateSchema = z.object({
 export type CommunityRankingEntry = z.infer<typeof rankingEntrySchema>;
 export type CommunityRankingState = z.infer<typeof stateSchema>;
 
-const rankingPath = path.join(process.cwd(), "data", "community_ranking.json");
-const partialRankingPath = path.join(process.cwd(), "data", "community_ranking.partial.json");
-const statePath = path.join(process.cwd(), "data", "community-ranking-state.json");
+const rankingPath = path.join(/* turbopackIgnore: true */ process.cwd(), "data", "community_ranking.json");
+const partialRankingPath = path.join(/* turbopackIgnore: true */ process.cwd(), "data", "community_ranking.partial.json");
+const statePath = path.join(/* turbopackIgnore: true */ process.cwd(), "data", "community-ranking-state.json");
 const projectDataDirectory = path.dirname(rankingPath);
 const legacyRankingPath = "C:\\SotakunJson\\V_Codex\\community_ranking.json";
-const bundledScriptPath = path.join(process.cwd(), "scripts", "community-ranking", "community_ranking.py");
-const refreshIntervalMs = 24 * 60 * 60 * 1_000;
+const bundledScriptPath = path.join(/* turbopackIgnore: true */ process.cwd(), "scripts", "community-ranking", "community_ranking.py");
+
+function positiveNumber(value: string | undefined, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+export const communityRankingIncrementalIntervalMs = Math.max(5, positiveNumber(process.env.COMMUNITY_RANKING_INCREMENTAL_MINUTES, 10)) * 60 * 1_000;
+const fullRefreshIntervalMs = positiveNumber(process.env.COMMUNITY_RANKING_FULL_INTERVAL_DAYS, 30) * 24 * 60 * 60 * 1_000;
 
 const defaultState: CommunityRankingState = {
   lastAttemptAt: null,
   lastSuccessfulRunAt: null,
+  lastIncrementalSuccessfulRunAt: null,
+  lastFullSuccessfulRunAt: null,
+  runMode: null,
   status: "idle",
   entries: 0,
   error: null,
@@ -60,7 +73,14 @@ async function writeJsonAtomic(filePath: string, value: unknown) {
 
 export async function getCommunityRankingState(): Promise<CommunityRankingState> {
   if (!(await fileExists(statePath))) return defaultState;
-  try { return stateSchema.parse(JSON.parse(await readFile(statePath, "utf8"))); }
+  try {
+    const raw: unknown = JSON.parse(await readFile(statePath, "utf8"));
+    const state = stateSchema.parse(raw);
+    if (raw && typeof raw === "object" && !("lastFullSuccessfulRunAt" in raw)) {
+      state.lastFullSuccessfulRunAt = state.lastSuccessfulRunAt;
+    }
+    return state;
+  }
   catch { return defaultState; }
 }
 
@@ -69,18 +89,18 @@ export async function getCommunityRanking(): Promise<CommunityRankingEntry[]> {
     if (!(await fileExists(source))) return [];
     try { return rankingSchema.parse(JSON.parse(await readFile(source, "utf8"))); } catch { return []; }
   }));
-  return mergeRankingSnapshots(...snapshots);
+  const authoritativeSnapshot = snapshots.find((snapshot) => snapshot.length > 0) ?? [];
+  return normalizeRankingSnapshot(authoritativeSnapshot);
 }
 
-function mergeRankingSnapshots(...snapshots: CommunityRankingEntry[][]) {
+function normalizeRankingSnapshot(snapshot: CommunityRankingEntry[]) {
   const users = new Map<string, CommunityRankingEntry>();
-  for (const snapshot of snapshots) for (const entry of snapshot) {
+  for (const entry of snapshot) {
     if (isRankingExcluded(entry.username)) continue;
-    const previous = users.get(entry.username);
-    const comments = Math.max(previous?.comments ?? 0, entry.comments);
-    const liveMessages = Math.max(previous?.live_messages ?? 0, entry.live_messages);
-    const uniqueVideos = Math.max(previous?.unique_videos ?? 0, entry.unique_videos);
-    const uniqueLives = Math.max(previous?.unique_lives ?? 0, entry.unique_lives);
+    const comments = entry.comments;
+    const liveMessages = entry.live_messages;
+    const uniqueVideos = entry.unique_videos;
+    const uniqueLives = entry.unique_lives;
     users.set(entry.username, {
       username: entry.username,
       comments,
@@ -93,11 +113,12 @@ function mergeRankingSnapshots(...snapshots: CommunityRankingEntry[][]) {
   return [...users.values()].sort((left, right) => right.points - left.points);
 }
 
-async function runPythonRankingEngine() {
+async function runPythonRankingEngine(mode: "incremental" | "full") {
   const configuredScriptPath = process.env.COMMUNITY_RANKING_SCRIPT_PATH;
-  const scriptPath = configuredScriptPath
-    ? (path.isAbsolute(configuredScriptPath) ? configuredScriptPath : path.resolve(configuredScriptPath))
-    : bundledScriptPath;
+  if (configuredScriptPath && !path.isAbsolute(configuredScriptPath)) {
+    throw new Error("COMMUNITY_RANKING_SCRIPT_PATH debe ser una ruta absoluta.");
+  }
+  const scriptPath = configuredScriptPath ?? bundledScriptPath;
   if (!path.isAbsolute(scriptPath) || path.extname(scriptPath).toLowerCase() !== ".py") {
     throw new Error("COMMUNITY_RANKING_SCRIPT_PATH debe apuntar a un archivo Python absoluto.");
   }
@@ -106,7 +127,7 @@ async function runPythonRankingEngine() {
   const pythonCommand = process.env.COMMUNITY_RANKING_PYTHON ?? "python";
 
   await new Promise<void>((resolve, reject) => {
-    const child = spawn(pythonCommand, [scriptPath], {
+    const child = spawn(pythonCommand, [scriptPath, "--mode", mode], {
       cwd: projectDataDirectory,
       env: { ...process.env, PYTHONUTF8: "1", PYTHONIOENCODING: "utf-8" },
       stdio: ["ignore", "inherit", "inherit"],
@@ -117,14 +138,22 @@ async function runPythonRankingEngine() {
   });
 }
 
-async function performRefresh(): Promise<CommunityRankingState> {
-  const runningState: CommunityRankingState = { ...await getCommunityRankingState(), lastAttemptAt: new Date().toISOString(), status: "running", error: null };
+async function performRefresh(mode: "incremental" | "full"): Promise<CommunityRankingState> {
+  const runningState: CommunityRankingState = { ...await getCommunityRankingState(), lastAttemptAt: new Date().toISOString(), runMode: mode, status: "running", error: null };
   await writeJsonAtomic(statePath, runningState);
   try {
-    await runPythonRankingEngine();
+    await runPythonRankingEngine(mode);
     const ranking = await getCommunityRanking();
     await writeJsonAtomic(rankingPath, ranking);
-    const successState: CommunityRankingState = { ...runningState, lastSuccessfulRunAt: new Date().toISOString(), status: "success", entries: ranking.length };
+    const completedAt = new Date().toISOString();
+    const successState: CommunityRankingState = {
+      ...runningState,
+      lastSuccessfulRunAt: completedAt,
+      lastIncrementalSuccessfulRunAt: completedAt,
+      lastFullSuccessfulRunAt: mode === "full" ? completedAt : runningState.lastFullSuccessfulRunAt,
+      status: "success",
+      entries: ranking.length,
+    };
     await writeJsonAtomic(statePath, successState);
     return successState;
   } catch (error) {
@@ -134,11 +163,19 @@ async function performRefresh(): Promise<CommunityRankingState> {
   }
 }
 
-export async function refreshCommunityRanking(options: { force?: boolean } = {}) {
+export function isFullCommunityRankingRefreshDue(state: CommunityRankingState, now = Date.now()) {
+  const lastFullRun = state.lastFullSuccessfulRunAt ? Date.parse(state.lastFullSuccessfulRunAt) : 0;
+  return !lastFullRun || now - lastFullRun >= fullRefreshIntervalMs;
+}
+
+export async function refreshCommunityRanking(options: { force?: boolean; mode?: "incremental" | "full" } = {}) {
   if (globalThis.__sotahubRankingRefresh) return globalThis.__sotahubRankingRefresh;
+  const mode = options.mode ?? "incremental";
   const state = await getCommunityRankingState();
-  const lastRun = state.lastSuccessfulRunAt ? Date.parse(state.lastSuccessfulRunAt) : 0;
-  if (!options.force && Date.now() - lastRun < refreshIntervalMs) return state;
-  globalThis.__sotahubRankingRefresh = performRefresh().finally(() => { globalThis.__sotahubRankingRefresh = undefined; });
+  const lastRunAt = mode === "full" ? state.lastFullSuccessfulRunAt : state.lastIncrementalSuccessfulRunAt ?? state.lastSuccessfulRunAt;
+  const intervalMs = mode === "full" ? fullRefreshIntervalMs : communityRankingIncrementalIntervalMs;
+  const lastRun = lastRunAt ? Date.parse(lastRunAt) : 0;
+  if (!options.force && Date.now() - lastRun < intervalMs) return state;
+  globalThis.__sotahubRankingRefresh = performRefresh(mode).finally(() => { globalThis.__sotahubRankingRefresh = undefined; });
   return globalThis.__sotahubRankingRefresh;
 }

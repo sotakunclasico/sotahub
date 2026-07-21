@@ -2,5 +2,5 @@ import type { HTMLAttributes } from "react";
 import { cn } from "@/utils/cn";
 
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("glass-panel rounded-2xl", className)} {...props} />;
+  return <div className={cn("glass-panel", className)} {...props} />;
 }

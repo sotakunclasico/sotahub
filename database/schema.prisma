@@ -43,23 +43,59 @@ enum GiveawayStatus {
 }
 
 model User {
-  id              String            @id @default(cuid())
-  discordId       String?           @unique
-  email           String?           @unique
-  name            String?
-  image           String?
-  role            Role              @default(USER)
-  points          Int               @default(0)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  orders          Order[]
-  certificates    Certificate[]
-  rankingEntries  RankingEntry[]
-  achievements    UserAchievement[]
-  giveawayEntries GiveawayEntry[]
-  auditLogs       AuditLog[]        @relation("AuditActor")
+  id               String              @id @default(cuid())
+  discordId        String?             @unique
+  email            String?             @unique
+  name             String?
+  image            String?
+  role             Role                @default(USER)
+  points           Decimal             @default(0) @db.Decimal(12, 2)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  orders           Order[]
+  certificates     Certificate[]
+  rankingEntries   RankingEntry[]
+  achievements     UserAchievement[]
+  giveawayEntries  GiveawayEntry[]
+  auditLogs        AuditLog[]          @relation("AuditActor")
+  externalAccounts ExternalAccount[]
+  youtubeChannel   YouTubeChannelLink?
 
   @@index([points])
+}
+
+model ExternalAccount {
+  id                     String    @id @default(cuid())
+  userId                 String
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider               String
+  providerAccountId      String
+  scopes                 String[]
+  accessTokenCiphertext  String?
+  refreshTokenCiphertext String?
+  expiresAt              DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+model YouTubeChannelLink {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channelId       String    @unique
+  title           String
+  handle          String?
+  thumbnail       String?
+  rankingUsername String?
+  linkedAt        DateTime  @default(now())
+  verifiedAt      DateTime?
+  lastSyncedAt    DateTime?
+
+  @@index([rankingUsername])
 }
 
 model Collection {
@@ -73,19 +109,19 @@ model Collection {
 }
 
 model Product {
-  id           String        @id @default(cuid())
-  slug         String        @unique
+  id           String           @id @default(cuid())
+  slug         String           @unique
   name         String
   description  String
   priceInCents Int
-  status       ProductStatus @default(DRAFT)
+  status       ProductStatus    @default(DRAFT)
   collectionId String?
-  collection   Collection?   @relation(fields: [collectionId], references: [id])
+  collection   Collection?      @relation(fields: [collectionId], references: [id])
   variants     ProductVariant[]
   orderItems   OrderItem[]
   certificates Certificate[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   @@index([status])
 }
@@ -157,7 +193,7 @@ model RankingEntry {
   user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   seasonId String
   season   RankingSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
-  points   Int           @default(0)
+  points   Decimal       @default(0) @db.Decimal(12, 2)
   position Int?
 
   @@unique([userId, seasonId])
@@ -184,14 +220,14 @@ model UserAchievement {
 }
 
 model Giveaway {
-  id          String           @id @default(cuid())
+  id          String          @id @default(cuid())
   title       String
   description String
-  status      GiveawayStatus   @default(DRAFT)
+  status      GiveawayStatus  @default(DRAFT)
   startsAt    DateTime
   endsAt      DateTime
   entries     GiveawayEntry[]
-  createdAt   DateTime         @default(now())
+  createdAt   DateTime        @default(now())
 }
 
 model GiveawayEntry {
@@ -200,6 +236,7 @@ model GiveawayEntry {
   giveaway   Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weight     Int      @default(1)
   createdAt  DateTime @default(now())
 
   @@unique([giveawayId, userId])

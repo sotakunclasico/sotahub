@@ -1,6 +1,6 @@
-npm run typecheck
+npm.cmd run typecheck
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-npm run lint
+npm.cmd run lint
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-npm run build
+npm.cmd run build
 exit $LASTEXITCODE

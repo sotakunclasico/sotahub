@@ -1,6 +1,6 @@
 export const defaultRankingExclusions = [
   "sotakun",
-  "joseantoniodiazllamas",
+  "joseantonio",
   "streamelement",
 ] as const;
 

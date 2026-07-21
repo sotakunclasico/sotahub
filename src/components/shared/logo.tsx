@@ -1,3 +1,13 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Hexagon } from "lucide-react";
-export function Logo() { return <Link href="/" className="flex items-center gap-3 font-black tracking-tight text-white"><span className="relative grid size-10 place-items-center text-sky-300"><Hexagon className="absolute" size={38}/><span className="text-sm">S</span></span><span className="text-xl">SOTA<span className="text-sky-400">KUN</span></span></Link>; }
+
+export function Logo() {
+  return (
+    <Link href="/" aria-label="Ir al inicio de SotaKun" className="group flex items-center gap-2">
+      <span className="relative block size-14 overflow-hidden">
+        <Image src="/assets/sotakun/logo-mark.png" alt="" fill priority sizes="56px" className="scale-[1.8] object-contain transition duration-500 group-hover:scale-[1.9] group-hover:brightness-125" />
+      </span>
+      <span className="font-serif text-2xl italic tracking-[-.06em] text-[#d5b57b] transition group-hover:text-[#f0d7a5]">SotaKun</span>
+    </Link>
+  );
+}
