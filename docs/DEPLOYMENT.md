@@ -36,6 +36,8 @@ El proyecto se despliega con OpenNext. En Cloudflare Builds se configura:
 
 Para probar exactamente el Worker antes de publicarlo se usa `npm run preview`. `npm run build` comprueba Next.js; `npm run cf:build` también genera `.open-next/worker.js` y los assets que consume Wrangler.
 
+`wrangler.jsonc` incluye el mismo build de OpenNext como paso de seguridad. Así, `npx wrangler deploy` también genera el Worker si el panel de Cloudflare conserva temporalmente `npm run build`; aun así, se recomienda corregir el comando del panel para evitar compilar Next.js dos veces.
+
 Configurar como secretos de producción `AUTH_SECRET`, `AUTH_DISCORD_ID`, `AUTH_DISCORD_SECRET`, `DISCORD_BOT_TOKEN`, `DISCORD_GUILD_ID`, `DISCORD_MEMBER_ROLE_ID`, `CRON_SECRET`, `YOUTUBE_OAUTH_CLIENT_ID`, `YOUTUBE_OAUTH_CLIENT_SECRET` y `YOUTUBE_API_KEY`. Configurar además:
 
 - `NEXT_PUBLIC_APP_URL=https://DOMINIO`

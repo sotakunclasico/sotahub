@@ -7,6 +7,9 @@
     "nodejs_compat",
     "global_fetch_strictly_public"
   ],
+  "build": {
+    "command": "npm run cf:build"
+  },
   "vars": {
     "SOTAHUB_RUNTIME": "cloudflare",
     "COMMUNITY_RANKING_AUTOSTART": "false"
@@ -22,6 +25,18 @@
     }
   ],
   "observability": {
-    "enabled": true
+    "enabled": false,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
   }
 }
