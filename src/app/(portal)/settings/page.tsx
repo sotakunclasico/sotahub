@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getYouTubeLinkReadiness } from "@/features/connections/youtube/youtube-link.config";
+import { YouTubeLinkLifetimeRefresh } from "@/features/connections/youtube/youtube-link-lifetime-refresh";
 import { getLinkedYouTubeChannel } from "@/features/connections/youtube/youtube-link.service";
 import { auth } from "@/lib/auth";
 
@@ -31,6 +32,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const message = query.youtube ? feedback[query.youtube] : null;
 
   return <>
+    {linkedChannel && <YouTubeLinkLifetimeRefresh />}
     <div className="relative overflow-hidden border-b border-[#6f522f]/35 pb-9">
       <div className="orb -left-48 -top-48"/>
       <Badge><Cable size={12} className="mr-1"/> CENTRO DE CONEXIONES</Badge>

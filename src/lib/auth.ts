@@ -1,10 +1,11 @@
 import NextAuth from "next-auth";
 import Discord from "next-auth/providers/discord";
+import { AUTH_SESSION_MAX_AGE_SECONDS } from "@/config/session";
 import { ensureDiscordCommunityMember } from "@/features/auth/services/discord-community";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [Discord({ authorization: { params: { scope: "identify email guilds.join" } } })],
-  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+  session: { strategy: "jwt", maxAge: AUTH_SESSION_MAX_AGE_SECONDS },
   pages: { signIn: "/login" },
   callbacks: {
     signIn: async ({ account, profile }) => {

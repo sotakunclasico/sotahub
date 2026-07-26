@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { type NextRequest, NextResponse } from "next/server";
+import { YOUTUBE_LINK_MAX_AGE_SECONDS } from "@/config/session";
 import { auth } from "@/lib/auth";
 import { getYouTubeLinkConfig } from "@/features/connections/youtube/youtube-link.config";
 import { readYouTubeOAuthState, sealYouTubeCookie, youtubeLinkCookieName, youtubeOAuthCookieName } from "@/features/connections/youtube/youtube-link-cookie";
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
       sameSite: "lax",
       secure: config.appUrl.startsWith("https://"),
       path: "/",
-      maxAge: 30 * 24 * 60 * 60,
+      maxAge: YOUTUBE_LINK_MAX_AGE_SECONDS,
     });
     return response;
   } catch {

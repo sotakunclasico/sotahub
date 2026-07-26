@@ -12,7 +12,41 @@ export const collaboration = {
   artistHandle: "@niebla_tattooer",
   status: "En preparación",
   summary:
-    "Una edición limitada nacida de un dibujo original de Niebla Tattooer y desarrollada para la comunidad de SotaKun.",
+    "Una colección limitada nacida de un dibujo original de Niebla Tattooer y desarrollada junto a SotaKun para convertir una historia de la comunidad en piezas físicas.",
+  origin:
+    "La colaboración parte de una ilustración dibujada a mano por Niebla Tattooer. A partir de ese boceto se construyó la identidad de El legado del Rey Helado: una pieza oscura, inspirada en la fantasía y pensada para representar el universo de SotaKun fuera de la pantalla.",
+  partnersDetail: [
+    {
+      name: "Niebla Tattooer",
+      role: "Arte original y lenguaje visual",
+      description:
+        "Firma el dibujo original, la estética de tinta y el tratamiento de las piezas gráficas. Su trabajo aporta el carácter artesanal y la fuerza visual de la colección.",
+    },
+    {
+      name: "SotaKun",
+      role: "Concepto, dirección y comunidad",
+      description:
+        "Conecta la obra con la historia del canal, dirige su aplicación al producto y prepara la experiencia de colección, numeración y certificación.",
+    },
+  ],
+  process: [
+    {
+      title: "Boceto original",
+      description: "La idea comienza en papel, dibujada a mano y con una composición creada expresamente para la colaboración.",
+    },
+    {
+      title: "Arte final",
+      description: "El dibujo se limpia y adapta respetando el trazo, el contraste y la identidad original de Niebla Tattooer.",
+    },
+    {
+      title: "Aplicación a la colección",
+      description: "El arte se distribuye entre camiseta, póster, pegatinas y cartas para que cada soporte tenga una función propia.",
+    },
+    {
+      title: "Edición certificada",
+      description: "La colección se prepara para incorporar unidades numeradas y un certificado verificable mediante QR.",
+    },
+  ],
   pack: [
     "Camiseta de algodón premium con arte frontal, trasera y manga",
     "Póster de la colaboración",
