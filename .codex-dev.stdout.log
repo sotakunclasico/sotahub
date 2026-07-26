@@ -25,3 +25,17 @@ Finalizado: 536 vídeos, 526 desde caché, 93 comentarios, 5231 mensajes, 0 erro
  GET /api/auth/session 200 in 18ms (next.js: 8ms, application-code: 11ms)
  GET /merch 200 in 61ms (next.js: 33ms, application-code: 28ms)
  GET /colaboradores 200 in 41ms (next.js: 8ms, application-code: 33ms)
+Modo incremental: 536 vídeos únicos encontrados
+[1/536] 41fFwizKA5A: 0 comentarios, 0 mensajes
+[2/536] XCiVNAqWFsc: 0 comentarios, 0 mensajes
+[3/536] qytfyPJbCeM: 0 comentarios, 0 mensajes
+[4/536] bRt-zfCiTiM: 1 comentarios, 0 mensajes
+[5/536] ji82PeXucNE: 0 comentarios, 0 mensajes
+[6/536] l3EeplCKlY4: 1 comentarios, 0 mensajes
+[7/536] wcMFdGSg94M: 0 comentarios, 0 mensajes
+[8/536] yuUEGC3g-9c: 0 comentarios, 0 mensajes
+[9/536] gMVZXNTezmc: 0 comentarios, 0 mensajes
+[10/536] cfeEJivfbSQ: 0 comentarios, 0 mensajes
+Finalizado: 536 vídeos, 526 desde caché, 93 comentarios, 5231 mensajes, 0 errores, 0.17 minutos
+✓ Compiled in 186ms
+✓ Compiled in 3ms
