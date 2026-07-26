@@ -35,12 +35,14 @@ export default function CollaborationsPage() {
 
   return <>
     <PageHeader
+      align="center"
       eyebrow="HISTORIAS CREADAS JUNTOS"
       title="Colaboraciones"
       description="Proyectos donde dos identidades se encuentran para crear algo propio. Aquí documentamos las obras, las personas y el proceso detrás de cada colaboración de SotaKun."
     />
 
     <Section
+      align="center"
       id="niebla"
       eyebrow="PRIMERA COLABORACIÓN"
       title={collaboration.partners}
@@ -82,6 +84,7 @@ export default function CollaborationsPage() {
     </Section>
 
     <Section
+      align="center"
       id="proceso"
       eyebrow="DEL BOCETO A LA COLECCIÓN"
       title="El proceso creativo"
@@ -96,7 +99,7 @@ export default function CollaborationsPage() {
       </div>
     </Section>
 
-    <Section eyebrow="COLABORA CON SOTAKUN" title="Una buena colaboración empieza por el encaje" description="Buscamos personas, proyectos y marcas con algo auténtico que contar. Nos interesan las ideas que respetan la identidad de ambas partes y pueden construirse con tiempo, criterio y una autoría clara.">
+    <Section align="center" eyebrow="COLABORA CON SOTAKUN" title="Una buena colaboración empieza por el encaje" description="Buscamos personas, proyectos y marcas con algo auténtico que contar. Nos interesan las ideas que respetan la identidad de ambas partes y pueden construirse con tiempo, criterio y una autoría clara.">
       <div className="grid gap-4 sm:grid-cols-2">
         {profiles.map((profile, index) => <Card className="p-6 md:p-8" key={profile.title}>
           <div className="flex items-center gap-3 text-[#c99c54]">{index === 0 ? <Lightbulb/> : index === 1 ? <Handshake/> : index === 2 ? <UsersRound/> : <HeartHandshake/>}<span className="eyebrow">0{index + 1}</span></div>
@@ -106,14 +109,14 @@ export default function CollaborationsPage() {
       </div>
     </Section>
 
-    <Section eyebrow="FORMA DE TRABAJAR" title="Qué puedes esperar" description="Cada propuesta se valora por su historia, su viabilidad y lo que puede aportar a la comunidad. No es un formulario para patrocinios automáticos.">
+    <Section align="center" eyebrow="FORMA DE TRABAJAR" title="Qué puedes esperar" description="Cada propuesta se valora por su historia, su viabilidad y lo que puede aportar a la comunidad. No es un formulario para patrocinios automáticos.">
       <Card className="p-7 md:p-9">
         <h2 className="font-serif text-2xl text-[#ddc59b]">Principios de colaboración</h2>
         <ul className="mt-6 grid gap-4 md:grid-cols-2">{principles.map((principle) => <li className="flex gap-3 text-sm leading-7 text-[#958773]" key={principle}><BadgeCheck className="mt-1 shrink-0 text-[#9bab7f]" size={17}/>{principle}</li>)}</ul>
       </Card>
     </Section>
 
-    <Section id="propuesta" eyebrow="PRESENTA TU IDEA" title="Cuéntanos qué quieres crear" description="Explica quién eres, qué propones y por qué crees que encaja con SotaKun. Cuanto más concreta sea la idea, mejor podremos valorarla.">
+    <Section align="center" id="propuesta" eyebrow="PRESENTA TU IDEA" title="Cuéntanos qué quieres crear" description="Explica quién eres, qué propones y por qué crees que encaja con SotaKun. Cuanto más concreta sea la idea, mejor podremos valorarla.">
       <Card className="p-6 md:p-10">
         <CollaborationApplicationForm configured={configured} turnstileSiteKey={turnstileSiteKey}/>
       </Card>
