@@ -17,7 +17,7 @@ export function Section({
   description,
   children,
   className,
-  align = "left",
+  align = "center",
 }: SectionProps) {
   const centered = align === "center";
 

@@ -5,7 +5,7 @@ export function PageHeader({
   eyebrow,
   title,
   description,
-  align = "left",
+  align = "center",
 }: {
   eyebrow: string;
   title: string;
