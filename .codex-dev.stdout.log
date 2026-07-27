@@ -21,3 +21,68 @@ Modo incremental: 538 vídeos únicos encontrados
 [9/538] wcMFdGSg94M: 0 comentarios, 0 mensajes
 [10/538] yuUEGC3g-9c: 0 comentarios, 0 mensajes
 Finalizado: 538 vídeos, 528 desde caché, 93 comentarios, 5231 mensajes, 0 errores, 0.18 minutos
+ GET /api/auth/session 200 in 2.9s (next.js: 2.6s, application-code: 260ms)
+ GET /api/auth/session 200 in 280ms (next.js: 78ms, application-code: 202ms)
+ GET / 200 in 7.6s (next.js: 366ms, application-code: 7.2s)
+✓ Compiled in 220ms
+Modo incremental: 538 vídeos únicos encontrados
+[1/538] y8ohIbGiwdc: 0 comentarios, 0 mensajes
+ GET / 200 in 6.1s (next.js: 173ms, application-code: 5.9s)
+[2/538] d8yFnASzrSM: 0 comentarios, 0 mensajes
+ GET / 200 in 5.8s (next.js: 13ms, application-code: 5.8s)
+ GET / 200 in 5.8s (next.js: 24ms, application-code: 5.8s)
+ GET / 200 in 5.9s (next.js: 119ms, application-code: 5.7s)
+ GET / 200 in 5.9s (next.js: 223ms, application-code: 5.6s)
+ GET / 200 in 5.9s (next.js: 374ms, application-code: 5.5s)
+ GET / 200 in 293ms (next.js: 9ms, application-code: 284ms)
+ GET / 200 in 160ms (next.js: 12ms, application-code: 148ms)
+[3/538] 41fFwizKA5A: 0 comentarios, 0 mensajes
+[4/538] XCiVNAqWFsc: 0 comentarios, 0 mensajes
+[5/538] qytfyPJbCeM: 0 comentarios, 0 mensajes
+[6/538] bRt-zfCiTiM: 1 comentarios, 0 mensajes
+[7/538] ji82PeXucNE: 0 comentarios, 0 mensajes
+[8/538] l3EeplCKlY4: 1 comentarios, 0 mensajes
+[9/538] wcMFdGSg94M: 0 comentarios, 0 mensajes
+[10/538] yuUEGC3g-9c: 0 comentarios, 0 mensajes
+Finalizado: 538 vídeos, 528 desde caché, 93 comentarios, 5231 mensajes, 0 errores, 0.28 minutos
+✓ Compiled in 146ms
+✓ Compiled in 303ms
+✓ Compiled in 200ms
+ GET / 200 in 5.9s (next.js: 127ms, application-code: 5.8s)
+ GET / 200 in 6.0s (next.js: 11ms, application-code: 6.0s)
+ GET / 200 in 6.1s (next.js: 286ms, application-code: 5.8s)
+ GET / 200 in 6.1s (next.js: 443ms, application-code: 5.7s)
+ GET / 200 in 6.2s (next.js: 516ms, application-code: 5.7s)
+ GET / 200 in 6.2s (next.js: 569ms, application-code: 5.7s)
+ GET / 200 in 6.0s (next.js: 115ms, application-code: 5.9s)
+ GET / 200 in 5.8s (next.js: 36ms, application-code: 5.8s)
+ GET / 200 in 714ms (next.js: 18ms, application-code: 696ms)
+ GET / 200 in 819ms (next.js: 17ms, application-code: 802ms)
+ GET / 200 in 5.6s (next.js: 22ms, application-code: 5.5s)
+ GET / 200 in 5.5s (next.js: 13ms, application-code: 5.5s)
+ GET / 200 in 876ms (next.js: 34ms, application-code: 842ms)
+ GET / 200 in 5.5s (next.js: 17ms, application-code: 5.5s)
+ GET / 200 in 5.6s (next.js: 77ms, application-code: 5.5s)
+ GET / 200 in 1095ms (next.js: 20ms, application-code: 1075ms)
+ GET / 200 in 782ms (next.js: 14ms, application-code: 768ms)
+ GET / 200 in 711ms (next.js: 11ms, application-code: 700ms)
+ GET / 200 in 709ms (next.js: 87ms, application-code: 622ms)
+ GET / 200 in 646ms (next.js: 72ms, application-code: 574ms)
+ GET / 200 in 520ms (next.js: 44ms, application-code: 476ms)
+ GET / 200 in 431ms (next.js: 10ms, application-code: 421ms)
+ GET / 200 in 277ms (next.js: 13ms, application-code: 264ms)
+ GET / 200 in 276ms (next.js: 82ms, application-code: 194ms)
+ GET / 500 in 665ms (next.js: 353ms, application-code: 312ms)
+ GET / 500 in 108ms (next.js: 44ms, application-code: 64ms)
+ GET / 500 in 108ms (next.js: 69ms, application-code: 39ms)
+ GET / 500 in 56ms (next.js: 14ms, application-code: 42ms)
+✓ Compiled in 240ms
+ GET / 200 in 1375ms (next.js: 236ms, application-code: 1139ms)
+ GET /api/auth/session 200 in 236ms (next.js: 164ms, application-code: 73ms)
+ GET /api/auth/session 200 in 26ms (next.js: 5ms, application-code: 21ms)
+ GET / 200 in 330ms (next.js: 8ms, application-code: 322ms)
+ GET /api/auth/session 200 in 71ms (next.js: 25ms, application-code: 46ms)
+ GET /api/auth/session 200 in 41ms (next.js: 9ms, application-code: 33ms)
+ GET /noticias 200 in 300ms (next.js: 87ms, application-code: 213ms)
+ GET /api/auth/session 200 in 45ms (next.js: 20ms, application-code: 26ms)
+ GET /api/auth/session 200 in 29ms (next.js: 7ms, application-code: 22ms)

@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 import youtubeSnapshot from "../../../data/youtube-channel.json";
 import type { YouTubePlaylist, YouTubeSnapshot, YouTubeVideo } from "./youtube.types";
+import { filterPortraitBroadcastCopies } from "./youtube-presentation";
 import { siteConfig } from "@/config/site";
 
 const fallback: YouTubeSnapshot = {
@@ -155,7 +156,7 @@ function mapPlaylist(item: z.infer<typeof youtubePlaylistsResponseSchema>["items
 
 async function getLiveChannelData(snapshot: YouTubeSnapshot) {
   const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) return snapshot;
+  if (!apiKey) return snapshotForPresentation(snapshot);
   if (runtimeCache && runtimeCache.expiresAt > Date.now()) return runtimeCache.value;
 
   try {
@@ -186,7 +187,7 @@ async function getLiveChannelData(snapshot: YouTubeSnapshot) {
       }, youtubePlaylistsResponseSchema, apiKey),
     ]);
 
-    const allVideos = videoData.items.map(mapVideo);
+    const allVideos = await filterPortraitBroadcastCopies(videoData.items.map(mapVideo));
     const value: YouTubeSnapshot = {
       syncedAt: new Date().toISOString(),
       channel: {
@@ -211,8 +212,21 @@ async function getLiveChannelData(snapshot: YouTubeSnapshot) {
     runtimeCache = { expiresAt: Date.now() + runtimeCacheTtlMs, value };
     return value;
   } catch {
-    return snapshot;
+    return snapshotForPresentation(snapshot);
   }
+}
+
+async function snapshotForPresentation(snapshot: YouTubeSnapshot): Promise<YouTubeSnapshot> {
+  const videos = await filterPortraitBroadcastCopies(snapshot.videos);
+  return {
+    ...snapshot,
+    featured: {
+      latestVideo: videos.find((video) => !video.isLive && !video.isUpcoming) ?? snapshot.featured.latestVideo,
+      live: videos.find((video) => video.isLive) ?? null,
+      latestLive: videos.find((video) => video.wasLive && !video.isLive) ?? null,
+    },
+    videos,
+  };
 }
 
 export const youtubeService = {
