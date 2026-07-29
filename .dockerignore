@@ -1,0 +1,11 @@
+.git
+.github
+.next
+.open-next
+.wrangler
+node_modules
+data
+.env
+.env.*
+*.log
+*.tsbuildinfo

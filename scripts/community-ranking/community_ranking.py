@@ -17,7 +17,7 @@ from yt_dlp import YoutubeDL
 CHANNEL_ID = os.getenv("YOUTUBE_CHANNEL_ID", "UCJ-vmk0-j_GC8bB_RK2vA9A")
 MAX_WORKERS = max(1, int(os.getenv("COMMUNITY_RANKING_MAX_WORKERS", "1")))
 INCREMENTAL_VIDEO_LIMIT = max(1, int(os.getenv("COMMUNITY_RANKING_INCREMENTAL_VIDEO_LIMIT", "10")))
-OUTPUT_DIRECTORY = Path.cwd()
+OUTPUT_DIRECTORY = Path(os.getenv("COMMUNITY_RANKING_OUTPUT_DIRECTORY", Path.cwd())).resolve()
 CACHE_DIRECTORY = OUTPUT_DIRECTORY / ".community-ranking-cache"
 CHECKPOINT_DIRECTORY = OUTPUT_DIRECTORY / ".community-ranking-checkpoints"
 COOKIE_FILE = os.getenv("YOUTUBE_COOKIES_FILE")

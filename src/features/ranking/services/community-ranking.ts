@@ -31,6 +31,8 @@ const stateSchema = z.object({
 
 const bundledRankingSnapshot = rankingSchema.parse(bundledRankingJson);
 const bundledStateSnapshot = stateSchema.parse(bundledStateJson);
+const cloudflareRankingKey = "snapshots/community_ranking.json";
+const cloudflareStateKey = "snapshots/community-ranking-state.json";
 
 export type CommunityRankingEntry = z.infer<typeof rankingEntrySchema>;
 export type CommunityRankingState = z.infer<typeof stateSchema>;
@@ -65,8 +67,29 @@ async function writeJsonAtomic(filePath: string, value: unknown) {
   await rename(temporaryPath, filePath);
 }
 
+type RankingBucketBinding = {
+  get(key: string): Promise<{ json(): Promise<unknown> } | null>;
+};
+
+async function readCloudflareRankingObject(key: string) {
+  try {
+    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+    const { env } = await getCloudflareContext({ async: true });
+    const bucket = (env as typeof env & { RANKING_BUCKET?: RankingBucketBinding }).RANKING_BUCKET;
+    if (!bucket) return null;
+    const object = await bucket.get(key);
+    return object ? await object.json() : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getCommunityRankingState(): Promise<CommunityRankingState> {
-  if (process.env.SOTAHUB_RUNTIME === "cloudflare") return bundledStateSnapshot;
+  if (process.env.SOTAHUB_RUNTIME === "cloudflare") {
+    const raw = await readCloudflareRankingObject(cloudflareStateKey);
+    const parsed = stateSchema.safeParse(raw);
+    return parsed.success ? parsed.data : bundledStateSnapshot;
+  }
   if (!(await fileExists(statePath))) return bundledStateSnapshot;
   try {
     const raw: unknown = JSON.parse(await readFile(statePath, "utf8"));
@@ -81,7 +104,9 @@ export async function getCommunityRankingState(): Promise<CommunityRankingState>
 
 export async function getCommunityRanking(): Promise<CommunityRankingEntry[]> {
   if (process.env.SOTAHUB_RUNTIME === "cloudflare") {
-    return normalizeRankingSnapshot(bundledRankingSnapshot);
+    const raw = await readCloudflareRankingObject(cloudflareRankingKey);
+    const parsed = rankingSchema.safeParse(raw);
+    return normalizeRankingSnapshot(parsed.success ? parsed.data : bundledRankingSnapshot);
   }
   const snapshots = await Promise.all([rankingPath, partialRankingPath, legacyRankingPath].map(async (source) => {
     if (!(await fileExists(source))) return [];

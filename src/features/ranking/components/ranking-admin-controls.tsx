@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, DatabaseBackup, LoaderCircle, ScanSearch, ShieldCheck, TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,46 @@ export function RankingAdminControls({ initialState }: { initialState: Community
   const [error, setError] = useState(state.status === "failed" ? state.error ?? "" : "");
   const isRunning = activeMode !== null;
 
+  useEffect(() => {
+    if (!activeMode) return;
+    let cancelled = false;
+
+    async function pollState() {
+      try {
+        const response = await fetch("/api/ranking?fresh=1", {
+          cache: "no-store",
+          headers: { accept: "application/json" },
+        });
+        if (!response.ok) return;
+        const payload = await response.json() as { meta: CommunityRankingState };
+        if (cancelled) return;
+        setState(payload.meta);
+        if (payload.meta.status === "running") return;
+
+        setActiveMode(null);
+        if (payload.meta.status === "failed") {
+          setError(payload.meta.error ?? "El motor terminó con errores.");
+          setMessage("");
+        } else {
+          setError("");
+          setMessage(activeMode === "full"
+            ? `Análisis completo terminado: ${payload.meta.entries} usuarios procesados.`
+            : `Actualización desde backup terminada: ${payload.meta.entries} usuarios procesados.`);
+          router.refresh();
+        }
+      } catch {
+        // Un fallo temporal de red no cancela un trabajo que sigue ejecutándose.
+      }
+    }
+
+    void pollState();
+    const timer = window.setInterval(() => void pollState(), 5_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [activeMode, router]);
+
   async function runScan(mode: ScanMode) {
     setActiveMode(mode);
     setMessage("");
@@ -48,14 +88,21 @@ export function RankingAdminControls({ initialState }: { initialState: Community
         throw new Error(nextState.error ?? "El motor terminó con errores.");
       }
 
-      setMessage(mode === "full"
-        ? `Análisis completo terminado: ${nextState.entries} usuarios procesados.`
-        : `Actualización desde backup terminada: ${nextState.entries} usuarios procesados.`);
-      router.refresh();
+      if (nextState.status === "running") {
+        setActiveMode(nextState.runMode ?? mode);
+        setMessage(mode === "full"
+          ? "Escaneo completo iniciado. Puedes cerrar esta página; el motor continuará trabajando."
+          : "Actualización incremental iniciada. Puedes cerrar esta página; el motor continuará trabajando.");
+      } else {
+        setActiveMode(null);
+        setMessage(mode === "full"
+          ? `Análisis completo terminado: ${nextState.entries} usuarios procesados.`
+          : `Actualización desde backup terminada: ${nextState.entries} usuarios procesados.`);
+        router.refresh();
+      }
     } catch (scanError) {
-      setError(scanError instanceof Error ? scanError.message : "No se pudo ejecutar el análisis.");
-    } finally {
       setActiveMode(null);
+      setError(scanError instanceof Error ? scanError.message : "No se pudo ejecutar el análisis.");
     }
   }
 
@@ -98,7 +145,7 @@ export function RankingAdminControls({ initialState }: { initialState: Community
 
     {isRunning && <div className="mt-5 flex gap-3 border border-[#80623c]/50 bg-[#70481e]/10 p-4 text-sm leading-6 text-[#a38b6c]">
       <LoaderCircle className="mt-0.5 shrink-0 animate-spin text-[#d0a05a]" size={18}/>
-      <p>El análisis está trabajando. Un escaneo completo puede tardar bastante; no pulses de nuevo ni reinicies el servidor.</p>
+      <p>El análisis está trabajando en el servidor. Un escaneo completo puede tardar bastante, pero puedes navegar o cerrar esta página sin interrumpirlo.</p>
     </div>}
     {message && <div className="mt-5 flex gap-3 border border-[#587044]/55 bg-[#48612f]/10 p-4 text-sm text-[#a4b88b]"><CheckCircle2 className="shrink-0" size={18}/>{message}</div>}
     {error && <div className="mt-5 flex gap-3 border border-[#814735]/60 bg-[#672b20]/15 p-4 text-sm leading-6 text-[#d28b76]"><TriangleAlert className="mt-0.5 shrink-0" size={18}/>{error}</div>}

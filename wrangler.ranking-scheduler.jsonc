@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sotahub-ranking-scheduler",
+  "main": "workers/ranking-scheduler.mjs",
+  "compatibility_date": "2026-07-21",
+  "triggers": {
+    "crons": [
+      "3,13,23,33,43,53 * * * *",
+      "0 3 1 * *"
+    ]
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "persist": true,
+      "invocation_logs": true
+    }
+  }
+}

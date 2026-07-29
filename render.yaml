@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: sotahub-ranking-engine
+    runtime: docker
+    plan: free
+    dockerfilePath: ./services/ranking-engine/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: RANKING_ENGINE_SECRET
+        sync: false
+      - key: YOUTUBE_API_KEY
+        sync: false
+      - key: YOUTUBE_CHANNEL_ID
+        value: UCJ-vmk0-j_GC8bB_RK2vA9A
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        value: sotahub-ranking
+      - key: COMMUNITY_RANKING_MAX_WORKERS
+        value: "1"
+      - key: COMMUNITY_RANKING_INCREMENTAL_VIDEO_LIMIT
+        value: "10"

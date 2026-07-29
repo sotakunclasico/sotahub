@@ -24,6 +24,12 @@
       "service": "sotahub"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "RANKING_BUCKET",
+      "bucket_name": "sotahub-ranking"
+    }
+  ],
   "observability": {
     "enabled": false,
     "head_sampling_rate": 1,
