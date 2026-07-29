@@ -14,4 +14,5 @@ export interface GiveawayDrawResult {
   totalEntries: number;
   exclusions: string[];
   rankingFingerprint: string;
+  alternates: GiveawayCandidate[];
 }

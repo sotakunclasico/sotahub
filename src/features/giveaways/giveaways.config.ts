@@ -14,6 +14,7 @@ export const giveawayMilestones: GiveawayMilestone[] = [
 export const giveawayHistory = [
   {
     milestone: 300,
+    label: "300 suscriptores",
     title: "Hito de 300 suscriptores",
     prize: "1 mes de World of Warcraft",
     status: "completed",
@@ -23,12 +24,13 @@ export const giveawayHistory = [
   },
   {
     milestone: 350,
-    title: "Sorteo especial Niebla Tattoo",
-    prize: "SotaKun × Niebla Tattoo — First Edition",
+    label: "Sorteo especial",
+    title: "Sorteo especial SotaKun × Niebla Tattooer",
+    prize: "Pack de merchandising o sesión con Niebla Tattooer",
     status: "pending",
     winner: null,
     username: "@niebla_tattooer",
-    note: "Hito alcanzado. El sorteo todavía no se ha celebrado.",
+    note: "Participación abierta. Sorteo en directo el 15 de agosto de 2026 a las 22:00, hora de Madrid. El ganador elegirá una de las dos opciones.",
   },
 ] as const;
 

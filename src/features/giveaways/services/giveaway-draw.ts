@@ -5,6 +5,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getCommunityRanking } from "@/features/ranking/services/community-ranking";
 import type { GiveawayCandidate, GiveawayDrawResult } from "../giveaway-draw.types";
+import { nieblaGiveaway } from "../niebla-giveaway.config";
 
 const drawHistoryPath = path.join(process.cwd(), "data", "giveaway-draws.json");
 const minimumPoints = 5;
@@ -14,7 +15,7 @@ function canonical(value: string) {
 }
 
 export async function getGiveawayCandidates(exclusions: string[]): Promise<{ candidates: GiveawayCandidate[]; totalEntries: number }> {
-  const excluded = exclusions.map(canonical).filter(Boolean);
+  const excluded = [...nieblaGiveaway.mandatoryExclusions, ...exclusions].map(canonical).filter(Boolean);
   const ranking = await getCommunityRanking();
   const weighted = ranking
     .filter((entry) => entry.points > minimumPoints && !excluded.some((value) => canonical(entry.username).includes(value)))
@@ -38,17 +39,32 @@ async function saveResult(result: GiveawayDrawResult) {
 export async function runGiveawayDraw(title: string, exclusions: string[]): Promise<GiveawayDrawResult> {
   const { candidates, totalEntries } = await getGiveawayCandidates(exclusions);
   if (!candidates.length || totalEntries < 1) throw new Error("No hay participantes elegibles.");
-  const selectedTicket = randomInt(totalEntries);
-  let cursor = 0;
-  const winner = candidates.find((candidate) => {
-    cursor += candidate.entries;
-    return selectedTicket < cursor;
-  });
+  const remainingCandidates = [...candidates];
+
+  function selectCandidate() {
+    const remainingEntries = remainingCandidates.reduce((total, candidate) => total + candidate.entries, 0);
+    if (remainingEntries < 1) return undefined;
+    const selectedTicket = randomInt(remainingEntries);
+    let cursor = 0;
+    const selectedIndex = remainingCandidates.findIndex((candidate) => {
+      cursor += candidate.entries;
+      return selectedTicket < cursor;
+    });
+    if (selectedIndex < 0) return undefined;
+    return remainingCandidates.splice(selectedIndex, 1)[0];
+  }
+
+  const winner = selectCandidate();
   if (!winner) throw new Error("No se pudo seleccionar un ganador.");
+  const alternates = Array.from(
+    { length: Math.min(nieblaGiveaway.alternateWinners, remainingCandidates.length) },
+    () => selectCandidate(),
+  ).filter((candidate): candidate is GiveawayCandidate => Boolean(candidate));
   const fingerprint = createHash("sha256").update(JSON.stringify(candidates)).digest("hex");
+  const appliedExclusions = [...new Set([...nieblaGiveaway.mandatoryExclusions, ...exclusions])];
   const result: GiveawayDrawResult = {
     id: randomUUID(), title, createdAt: new Date().toISOString(), winner,
-    eligibleUsers: candidates.length, totalEntries, exclusions: [...new Set(exclusions)], rankingFingerprint: fingerprint,
+    eligibleUsers: candidates.length, totalEntries, exclusions: appliedExclusions, rankingFingerprint: fingerprint, alternates,
   };
   await saveResult(result);
   return result;
