@@ -4,6 +4,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SignOutButton } from "@/features/auth/sign-out-button";
 import { getLinkedYouTubeChannel } from "@/features/connections/youtube/youtube-link.service";
 import { auth } from "@/lib/auth";
 
@@ -20,7 +21,10 @@ export default async function ProfilePage() {
       <div className="flex flex-col gap-7 sm:flex-row sm:items-center">
         <Avatar name={name} className="size-24 text-2xl"/>
         <div className="flex-1"><Badge>{session.user.role}</Badge><h1 className="display-title mt-4 text-4xl text-[#e0c89e] md:text-5xl">{name}</h1><p className="mt-2 text-sm text-[#857969]">Identidad protegida mediante Discord.</p></div>
-        <Button href="/settings" variant="secondary">Gestionar conexiones</Button>
+        <div className="flex flex-col gap-3 sm:items-end">
+          <Button href="/settings" variant="secondary">Gestionar conexiones</Button>
+          <SignOutButton/>
+        </div>
       </div>
     </Card>
     <div className="mt-6 grid gap-5 md:grid-cols-3">
