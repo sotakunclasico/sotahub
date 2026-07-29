@@ -93,7 +93,7 @@ export default function NieblaGiveawayRulesPage() {
       </Card>
       <div className="mx-auto mt-5 grid max-w-4xl gap-4 md:grid-cols-2">
         <Card className="p-6 text-left"><h3 className="font-serif text-xl text-[#d8bd91]">Territorio</h3><p className="mt-3 text-sm leading-7 text-[#817565]">Pueden participar residentes de Europa y Latinoamérica. La disponibilidad efectiva del envío dependerá de que el transportista pueda operar legalmente en el país de destino.</p></Card>
-        <Card className="p-6 text-left"><h3 className="font-serif text-xl text-[#d8bd91]">Actividad prohibida</h3><p className="mt-3 text-sm leading-7 text-[#817565]">Cuentas duplicadas, bots, spam, suplantación o manipulación artificial de visitas, suscripciones, comentarios o «Me gusta». Solo quedan excluidos los creadores SotaKun y Niebla.</p></Card>
+        <Card className="p-6 text-left"><h3 className="font-serif text-xl text-[#d8bd91]">Actividad prohibida</h3><p className="mt-3 text-sm leading-7 text-[#817565]">Cuentas duplicadas, bots, spam, suplantación o manipulación artificial de visitas, suscripciones, comentarios o «Me gusta». No existen usuarios excluidos obligatoriamente; cualquier exclusión manual deberá decidirse antes de la extracción.</p></Card>
       </div>
     </Section>
 

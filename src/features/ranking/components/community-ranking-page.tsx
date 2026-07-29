@@ -3,6 +3,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
+import { RankingAdminControls } from "@/features/ranking/components/ranking-admin-controls";
 import { getCommunityRanking, getCommunityRankingState } from "@/features/ranking/services/community-ranking";
 
 function formatDate(value: string | null) {
@@ -16,7 +17,11 @@ const podiumStyles = [
   { label: "Veterano", color: "text-[#bf8056]", border: "border-[#87533a]/60", order: "md:order-3", icon: Trophy },
 ] as const;
 
-export async function CommunityRankingPage() {
+export async function CommunityRankingPage({
+  showAdminControls = false,
+}: {
+  showAdminControls?: boolean;
+}) {
   const [ranking, state] = await Promise.all([getCommunityRanking(), getCommunityRankingState()]);
   const topThree = ranking.slice(0, 3);
   const totalComments = ranking.reduce((total, entry) => total + entry.comments, 0);
@@ -51,6 +56,7 @@ export async function CommunityRankingPage() {
       </Card>
       <div className="mt-6 grid gap-3 text-xs leading-6 text-[#776c5f] sm:grid-cols-4">{[["+2","Comentario válido"],["+3","Vídeo diferente"],["+0,1","Mensaje en directo"],["+1","Directo diferente"]].map(([points,label])=><div className="border border-[#644d32]/35 bg-black/20 px-4 py-3" key={label}><strong className="mr-2 font-serif text-lg text-[#c99b52]">{points}</strong>{label}</div>)}</div>
       <p className="mt-5 text-xs leading-6 text-[#6f6558]">Los vídeos con títulos iguales se conservan cuando sus identificadores son diferentes. El spam y las cuentas excluidas no deben alterar la clasificación publicada.</p>
+      {showAdminControls ? <RankingAdminControls initialState={state}/> : null}
     </section>
   </>;
 }

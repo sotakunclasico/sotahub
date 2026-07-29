@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { BadgeCheck, History, Shield, Trophy, Tv } from "lucide-react";
+import { BadgeCheck, History, LayoutDashboard, Shield, Trophy, Tv } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ export default async function ProfilePage() {
   if (!session?.user.id) redirect("/login?callbackUrl=/perfil");
   const youtube = await getLinkedYouTubeChannel(session.user.id);
   const name = session.user.name ?? "Miembro SotaKun";
+  const canAccessAdmin = session.user.role === "ADMIN";
 
   return <>
     <Card className="ornate-frame overflow-hidden p-7 md:p-10">
@@ -22,6 +23,7 @@ export default async function ProfilePage() {
         <Avatar name={name} className="size-24 text-2xl"/>
         <div className="flex-1"><Badge>{session.user.role}</Badge><h1 className="display-title mt-4 text-4xl text-[#e0c89e] md:text-5xl">{name}</h1><p className="mt-2 text-sm text-[#857969]">Identidad protegida mediante Discord.</p></div>
         <div className="flex flex-col gap-3 sm:items-end">
+          {canAccessAdmin ? <Button href="/admin"><LayoutDashboard size={16}/>Administración</Button> : null}
           <Button href="/settings" variant="secondary">Gestionar conexiones</Button>
           <SignOutButton/>
         </div>

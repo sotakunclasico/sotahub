@@ -30,7 +30,6 @@ export const nieblaGiveaway = {
   shippingPaidBy: "SotaKun",
   customsPaidBy: "ganador",
   shippingDeadline: null,
-  mandatoryExclusions: ["sotakun", "nieblatattoo"],
   youtubeContestPolicyUrl: "https://support.google.com/youtube/answer/1620498?hl=es-419",
   pack: [
     "1 camiseta oficial de la colaboración",

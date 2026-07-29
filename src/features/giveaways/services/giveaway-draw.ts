@@ -15,7 +15,7 @@ function canonical(value: string) {
 }
 
 export async function getGiveawayCandidates(exclusions: string[]): Promise<{ candidates: GiveawayCandidate[]; totalEntries: number }> {
-  const excluded = [...nieblaGiveaway.mandatoryExclusions, ...exclusions].map(canonical).filter(Boolean);
+  const excluded = exclusions.map(canonical).filter(Boolean);
   const ranking = await getCommunityRanking();
   const weighted = ranking
     .filter((entry) => entry.points > minimumPoints && !excluded.some((value) => canonical(entry.username).includes(value)))
@@ -61,7 +61,7 @@ export async function runGiveawayDraw(title: string, exclusions: string[]): Prom
     () => selectCandidate(),
   ).filter((candidate): candidate is GiveawayCandidate => Boolean(candidate));
   const fingerprint = createHash("sha256").update(JSON.stringify(candidates)).digest("hex");
-  const appliedExclusions = [...new Set([...nieblaGiveaway.mandatoryExclusions, ...exclusions])];
+  const appliedExclusions = [...new Set(exclusions)];
   const result: GiveawayDrawResult = {
     id: randomUUID(), title, createdAt: new Date().toISOString(), winner,
     eligibleUsers: candidates.length, totalEntries, exclusions: appliedExclusions, rankingFingerprint: fingerprint, alternates,
