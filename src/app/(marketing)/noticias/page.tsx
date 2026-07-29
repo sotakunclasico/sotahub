@@ -21,11 +21,36 @@ export default async function NewsPage() {
       <Button href={`${youtube.channel.url}/videos`} variant="secondary" className="mt-7">Abrir el canal <ArrowUpRight size={15}/></Button>
     </Section>}
 
-    <Section eyebrow="ESTADO DE SOTAHUB" title="Desarrollo transparente" description="Solo mostramos funcionalidades que existen o cuyo estado está claramente identificado.">
+    <Section
+      eyebrow="ESTADO DE SOTAHUB"
+      title="Desarrollo transparente"
+      description="Estado real de los sistemas que mantienen actualizada la plataforma, sin datos de muestra ni procesos ocultos."
+    >
       <div className="grid gap-5 md:grid-cols-3">
-        <Card className="p-7"><Newspaper className="text-[#c69a55]"/><Badge className="mt-5">DISPONIBLE</Badge><h2 className="mt-4 font-serif text-2xl text-[#ddc59b]">Ranking comunitario</h2><p className="mt-3 text-sm leading-7 text-[#817666]">Consulta pública basada en el análisis real de comentarios y directos.</p></Card>
-        <Card className="p-7"><Newspaper className="text-[#c69a55]"/><Badge className="mt-5">EN PREPARACIÓN</Badge><h2 className="mt-4 font-serif text-2xl text-[#ddc59b]">SotaKun × Niebla</h2><p className="mt-3 text-sm leading-7 text-[#817666]">Archivo visual integrado; producción, existencias y precio todavía no publicados.</p></Card>
-        <Card className="p-7"><Clock3 className="text-[#c69a55]"/><Badge className="mt-5">SIGUIENTE FASE</Badge><h2 className="mt-4 font-serif text-2xl text-[#ddc59b]">Identidad YouTube</h2><p className="mt-3 text-sm leading-7 text-[#817666]">OAuth preparado para confirmar canales sin almacenar tokens de Google.</p></Card>
+        <Card className="p-7">
+          <Clock3 className="text-[#c69a55]"/>
+          <Badge className="mt-5">EN PRODUCCIÓN</Badge>
+          <h2 className="mt-4 font-serif text-2xl text-[#ddc59b]">Ranking automático</h2>
+          <p className="mt-3 text-sm leading-7 text-[#817666]">
+            Actualización incremental cada 10 minutos y análisis completo el primer día de cada mes.
+          </p>
+        </Card>
+        <Card className="p-7">
+          <Newspaper className="text-[#c69a55]"/>
+          <Badge className="mt-5">RESPALDADO</Badge>
+          <h2 className="mt-4 font-serif text-2xl text-[#ddc59b]">Datos protegidos</h2>
+          <p className="mt-3 text-sm leading-7 text-[#817666]">
+            Los resultados y checkpoints se conservan en Cloudflare R2. La web solo publica cálculos terminados correctamente.
+          </p>
+        </Card>
+        <Card className="p-7">
+          <Newspaper className="text-[#c69a55]"/>
+          <Badge className="mt-5">CONECTADO</Badge>
+          <h2 className="mt-4 font-serif text-2xl text-[#ddc59b]">Canal de YouTube</h2>
+          <p className="mt-3 text-sm leading-7 text-[#817666]">
+            Suscriptores, vídeos, directos y listas de reproducción proceden del canal oficial de SotaKun.
+          </p>
+        </Card>
       </div>
     </Section>
   </>;
