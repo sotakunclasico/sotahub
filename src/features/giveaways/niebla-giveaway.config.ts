@@ -13,6 +13,7 @@ export const nieblaGiveaway = {
   organizer: "SotaKun",
   legalOrganizer: "Jose Antonio Diaz Llamas",
   collaborator: "Niebla Tattooer",
+  studioAddress: "Villa Bicentenario, pasaje 7 n.º 979, Molina, Región del Maule, Chile",
   contactEmail: "sotakun.clasico@gmail.com",
   contactChannels: ["Discord", "correo electrónico"],
   territory: "Países de Europa y Latinoamérica",
@@ -40,7 +41,6 @@ export const nieblaGiveaway = {
   ],
   pendingDecisions: [
     "Enlace del directo del 15 de agosto",
-    "Nombre y ubicación del estudio de Niebla Tattooer",
   ],
 } as const;
 

@@ -77,7 +77,7 @@ export default function NieblaGiveawayRulesPage() {
             <li>Si no resulta seguro realizar el tatuaje, el profesional podrá rechazar la sesión.</li>
             <li>El ganador podrá escoger el pack físico si no puede desplazarse.</li>
           </ul>
-          <p className="mt-5 border-t border-[#634d35]/40 pt-5 text-xs leading-6 text-[#746959]">Solo disponible para mayores de 18 años. El estudio y su ubicación se añadirán cuando estén confirmados. Tamaño, zona corporal, retoques, disponibilidad y plazos se tratarán directamente con Niebla Tattooer.</p>
+          <p className="mt-5 border-t border-[#634d35]/40 pt-5 text-xs leading-6 text-[#746959]">Solo disponible para mayores de 18 años. La sesión se realizará en {nieblaGiveaway.studioAddress}. Tamaño, zona corporal, retoques, disponibilidad y plazos se tratarán directamente con Niebla Tattooer.</p>
         </Card>
       </div>
       <p className="mx-auto mt-6 max-w-4xl text-center text-xs leading-6 text-[#716657]">El premio no puede canjearse por dinero. Las imágenes son orientativas y pueden existir pequeñas variaciones físicas. Solo podrá sustituirse un elemento por otro de valor equivalente cuando resulte necesario.</p>

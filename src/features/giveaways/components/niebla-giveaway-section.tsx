@@ -74,7 +74,7 @@ export function NieblaGiveawaySection() {
           <h3 className="mt-4 font-serif text-3xl text-[#dfc69b]">Sesión con Niebla Tattooer</h3>
           <p className="mt-5 text-sm leading-7 text-[#948673]">Una sesión gratuita para tatuarse el diseño promocionado, sujeta a la agenda, valoración profesional, condiciones sanitarias y consentimiento informado.</p>
           <div className="mt-5 space-y-3 text-sm text-[#817565]">
-            <p className="flex gap-3"><MapPin className="mt-1 shrink-0 text-[#aa8049]" size={15}/>Estudio y ubicación pendientes de confirmar.</p>
+            <p className="flex gap-3"><MapPin className="mt-1 shrink-0 text-[#aa8049]" size={15}/>{nieblaGiveaway.studioAddress}.</p>
             <p className="flex gap-3"><CalendarClock className="mt-1 shrink-0 text-[#aa8049]" size={15}/>Tamaño, zona corporal, retoques y plazos se acordarán directamente con el tatuador.</p>
           </div>
           <p className="mt-5 border-t border-[#665037]/40 pt-5 text-xs leading-6 text-[#756a5b]">Viaje, alojamiento y desplazamientos no incluidos. Si el ganador no puede desplazarse, podrá escoger el pack físico.</p>

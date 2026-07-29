@@ -34,7 +34,7 @@ export function Navbar() {
       </div>
       <div className="hidden items-center gap-3 xl:flex">
         <Button href={accountHref} variant="secondary" size="sm"><span className="max-w-32 truncate">{accountLabel}</span></Button>
-        {session && <Button type="button" variant="ghost" size="sm" onClick={logout} disabled={signingOut}>
+        {session && <Button type="button" variant="secondary" size="sm" onClick={logout} disabled={signingOut}>
           {signingOut ? <LoaderCircle className="animate-spin" size={15}/> : <LogOut size={15}/>}
           {signingOut ? "Saliendo…" : "Cerrar sesión"}
         </Button>}
@@ -46,7 +46,7 @@ export function Navbar() {
       {siteConfig.navigation.map((item) => <Link onClick={() => setOpen(false)} aria-current={pathname === item.href ? "page" : undefined} className={`block border-b border-[#7c5b31]/15 py-3 font-serif text-sm tracking-wider ${pathname === item.href ? "text-[#efc879]" : "text-[#b3a48d]"}`} href={item.href} key={item.href}>{item.label}</Link>)}
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <Button href={accountHref} variant="secondary" className="w-full">{accountLabel}</Button>
-        {session && <Button type="button" variant="ghost" className="w-full border border-[#6d5334]/45" onClick={logout} disabled={signingOut}>
+        {session && <Button type="button" variant="secondary" className="w-full" onClick={logout} disabled={signingOut}>
           {signingOut ? <LoaderCircle className="animate-spin" size={16}/> : <LogOut size={16}/>}
           {signingOut ? "Saliendo…" : "Cerrar sesión"}
         </Button>}
