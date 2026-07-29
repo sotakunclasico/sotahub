@@ -30,7 +30,7 @@ export const giveawayHistory = [
     status: "pending",
     winner: null,
     username: "@niebla_tattooer",
-    note: "Participación abierta. Sorteo en directo el 15 de agosto de 2026 a las 22:00, hora de Madrid. El ganador elegirá una de las dos opciones.",
+    note: "Participación abierta. El censo cierra el 15 de agosto de 2026 a las 21:30 y el sorteo comienza a las 22:00, hora de Madrid. El ganador elegirá una de las dos opciones.",
   },
 ] as const;
 

@@ -4,18 +4,20 @@ export const nieblaGiveaway = {
   status: "open",
   drawDate: "2026-08-15",
   drawTime: "22:00",
+  censusCloseTime: "21:30",
   timeZone: "Europe/Madrid",
   liveUrl: null,
   startsAt: "2026-07-29T00:00:00+02:00",
-  closesAt: "2026-08-15T22:00:00+02:00",
+  closesAt: "2026-08-15T21:30:00+02:00",
+  drawsAt: "2026-08-15T22:00:00+02:00",
   organizer: "SotaKun",
+  legalOrganizer: "Jose Antonio Diaz Llamas",
   collaborator: "Niebla Tattooer",
   contactEmail: "sotakun.clasico@gmail.com",
   contactChannels: ["Discord", "correo electrónico"],
   territory: "Países de Europa y Latinoamérica",
-  minimumAge: 0,
   tattooMinimumAge: 18,
-  youtubeSubscriptionRequired: true,
+  youtubeSubscriptionRequired: false,
   discordMembershipRequired: false,
   minimumPointsExclusive: 5,
   pointsPerEntry: 5,
@@ -23,6 +25,9 @@ export const nieblaGiveaway = {
   winners: 1,
   alternateWinners: 3,
   shirtSizes: "Todas las tallas disponibles",
+  winnerResponseHours: 72,
+  shippingPaidBy: "SotaKun",
+  customsPaidBy: "ganador",
   shippingDeadline: null,
   mandatoryExclusions: ["sotakun", "nieblatattoo"],
   youtubeContestPolicyUrl: "https://support.google.com/youtube/answer/1620498?hl=es-419",
@@ -30,12 +35,12 @@ export const nieblaGiveaway = {
     "1 camiseta oficial de la colaboración",
     "4 pegatinas seleccionadas de la colección",
     "2 pósteres: versión azul y versión monocroma",
+    "2 cartas de autor: SotaKun y Niebla Tattooer",
     "Certificado de autenticidad, exclusividad y numeración",
   ],
   pendingDecisions: [
     "Enlace del directo del 15 de agosto",
     "Nombre y ubicación del estudio de Niebla Tattooer",
-    "Condiciones completas de privacidad y conservación de datos",
   ],
 } as const;
 
@@ -59,6 +64,12 @@ export const nieblaPrizeArtwork = [
     alt: "Póster azul El legado del Rey Helado",
   },
   {
+    title: "Dos cartas de autor",
+    description: "El pack incluye las cartas oficiales de SotaKun y Niebla Tattooer pertenecientes a esta colaboración.",
+    src: "/assets/collaboration/niebla/collector-cards.webp",
+    alt: "Cartas oficiales de SotaKun y Niebla Tattooer",
+  },
+  {
     title: "Sesión de tatuaje",
     description: "Alternativa para mayores de 18 años. Tamaño, zona, retoques y plazos se acordarán directamente con el tatuador.",
     src: "/assets/collaboration/niebla/original-render.webp",
@@ -77,7 +88,7 @@ export const nieblaGiveawayFaq = [
   },
   {
     question: "¿Tengo que estar suscrito o pertenecer al Discord?",
-    answer: "Debes estar suscrito al canal oficial de SotaKun. Pertenecer al Discord no es obligatorio para entrar en el censo, aunque Discord y el correo electrónico se utilizarán para intentar contactar con el ganador.",
+    answer: "No. La participación depende del ranking y de superar los 5 puntos. La suscripción al canal y la pertenencia al Discord no son requisitos de entrada.",
   },
   {
     question: "¿Cómo aumentan mis posibilidades?",
@@ -92,16 +103,12 @@ export const nieblaGiveawayFaq = [
     answer: "Pueden participar residentes en Europa y Latinoamérica. Si el ganador reside en Latinoamérica, la entrega del merchandising se coordinará personalmente porque la logística será diferente.",
   },
   {
-    question: "¿Tengo que ser mayor de edad?",
-    answer: "No hay una edad mínima general para participar. La sesión de tatuaje solo puede elegirse si el ganador tiene 18 años o más; los menores podrán escoger el pack de merchandising.",
-  },
-  {
     question: "¿Está incluido el viaje al estudio?",
     answer: "No se incluirán viaje, alojamiento ni otros gastos de desplazamiento, salvo que las bases definitivas indiquen expresamente lo contrario.",
   },
   {
     question: "¿Quién paga el envío y las aduanas?",
-    answer: "La forma de entrega se acordará con el ganador según su zona. Para Latinoamérica se contactará personalmente con el ganador porque el envío y sus condiciones serán diferentes.",
+    answer: "SotaKun pagará el envío ordinario del pack. Los impuestos, aranceles o tasas de importación que puedan exigir las autoridades del país de destino corresponderán al ganador.",
   },
   {
     question: "¿Cómo elijo la talla?",
@@ -109,7 +116,7 @@ export const nieblaGiveawayFaq = [
   },
   {
     question: "¿Cómo sabré si he ganado?",
-    answer: "La extracción se realizará en directo el 15 de agosto de 2026 a las 22:00, hora de Madrid. Se contactará mediante Discord y correo electrónico. Si no se localiza al ganador, se acudirá por orden a los tres suplentes elegidos en el mismo sorteo.",
+    answer: "La extracción se realizará en directo el 15 de agosto de 2026 a las 22:00, hora de Madrid. Se intentará contactar primero mediante la cuenta de Discord vinculada y, si se ha facilitado, mediante correo electrónico. El ganador dispondrá de 72 horas para responder antes de acudir por orden a los tres suplentes.",
   },
   {
     question: "¿Puedo recibir dinero en lugar del premio?",
