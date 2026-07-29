@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getGiveawayCandidates } from "@/features/giveaways/services/giveaway-draw";
+import { RankingAdminControls } from "@/features/ranking/components/ranking-admin-controls";
 import { getCommunityRanking, getCommunityRankingState } from "@/features/ranking/services/community-ranking";
 import { Sidebar } from "@/layouts/sidebar";
 
@@ -45,6 +46,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="font-serif text-2xl text-[#dec69d]">{selected?.title ?? "Actividad administrativa"}</h2><p className="mt-3 max-w-2xl text-sm leading-7 text-[#807566]">{selected?.description ?? "Todavía no existen pedidos, certificados ni eventos administrativos persistidos. Cada módulo se activará cuando disponga de una fuente de datos real."}</p></div><Badge>{selected?.status ?? "SIN DATOS SIMULADOS"}</Badge></div>
         {selected && "href" in selected && <Button href={selected.href} variant="secondary" className="mt-6">{selected.action}</Button>}
       </Card>
+      {selected === modules.ranking && <RankingAdminControls initialState={rankingState}/>}
     </section>
   </div>;
 }

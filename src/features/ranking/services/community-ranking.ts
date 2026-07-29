@@ -147,7 +147,7 @@ async function performRefresh(mode: "incremental" | "full"): Promise<CommunityRa
     const successState: CommunityRankingState = {
       ...runningState,
       lastSuccessfulRunAt: completedAt,
-      lastIncrementalSuccessfulRunAt: completedAt,
+      lastIncrementalSuccessfulRunAt: mode === "incremental" ? completedAt : runningState.lastIncrementalSuccessfulRunAt,
       lastFullSuccessfulRunAt: mode === "full" ? completedAt : runningState.lastFullSuccessfulRunAt,
       status: "success",
       entries: ranking.length,
