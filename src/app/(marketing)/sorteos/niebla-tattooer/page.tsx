@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Bases · Sorteo SotaKun × Niebla Tattooer",
-  description: "Condiciones del sorteo especial SotaKun × Niebla Tattooer previsto para el 15 de agosto de 2026.",
+  description: "Condiciones del sorteo especial SotaKun × Niebla Tattooer previsto para el 22 de agosto de 2026.",
 };
 
 const participationExamples = [
@@ -26,7 +26,7 @@ export default function NieblaGiveawayRulesPage() {
     <PageHeader
       eyebrow={`BASES DEL SORTEO · PARTICIPACIÓN ${status === "open" ? "ABIERTA" : "CERRADA"}`}
       title="SotaKun × Niebla Tattooer"
-      description="Condiciones vigentes del sorteo especial. El censo cierra el 15 de agosto de 2026 a las 21:30 y la extracción comienza a las 22:00, hora de Madrid."
+      description="Condiciones vigentes del sorteo especial. El censo cierra el 22 de agosto de 2026 a las 21:30 y la extracción comienza a las 22:00, hora de Madrid."
     />
 
     <section className="shell -mt-8 pb-8">
@@ -34,14 +34,14 @@ export default function NieblaGiveawayRulesPage() {
         <ShieldCheck className="mx-auto text-[#a7bd78]" size={27}/>
         <Badge className="mt-4">{status === "open" ? "PARTICIPACIÓN ABIERTA" : "PARTICIPACIÓN CERRADA"}</Badge>
         <h2 className="mt-4 font-serif text-2xl text-[#dec397]">Censo abierto hasta el comienzo del sorteo</h2>
-        <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-[#8f816d]">El censo se cerrará el 15 de agosto de 2026 a las 21:30, hora de Madrid. Durante los siguientes 30 minutos se congelará el ranking, se revisarán duplicados y se calculará el número definitivo de participaciones. La extracción comenzará a las 22:00.</p>
+        <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-[#8f816d]">El censo se cerrará el 22 de agosto de 2026 a las 21:30, hora de Madrid. Durante los siguientes 30 minutos se congelará el ranking, se revisarán duplicados y se calculará el número definitivo de participaciones. La extracción comenzará a las 22:00.</p>
       </Card>
     </section>
 
     <Section eyebrow="01 · IDENTIFICACIÓN" title="Datos principales">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[
-          [CalendarClock, "Cierre y extracción", "21:30 / 22:00", "15 de agosto · hora de Madrid"],
+          [CalendarClock, "Cierre y extracción", "21:30 / 22:00", "22 de agosto · hora de Madrid"],
           [Users, "Organización", nieblaGiveaway.organizer, `${nieblaGiveaway.legalOrganizer} · Colabora ${nieblaGiveaway.collaborator}`],
           [Trophy, "Selección", `${nieblaGiveaway.winners} ganador`, `${nieblaGiveaway.alternateWinners} suplentes en el mismo sorteo`],
           [Scale, "Estado", status === "open" ? "Abierto" : "Cerrado", status === "open" ? "Participaciones activas" : "Censo cerrado"],

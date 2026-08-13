@@ -2,14 +2,14 @@ export const nieblaGiveaway = {
   name: "Sorteo especial SotaKun × Niebla Tattooer",
   slug: "niebla-tattooer",
   status: "open",
-  drawDate: "2026-08-15",
+  drawDate: "2026-08-22",
   drawTime: "22:00",
   censusCloseTime: "21:30",
   timeZone: "Europe/Madrid",
   liveUrl: null,
   startsAt: "2026-07-29T00:00:00+02:00",
-  closesAt: "2026-08-15T21:30:00+02:00",
-  drawsAt: "2026-08-15T22:00:00+02:00",
+  closesAt: "2026-08-22T21:30:00+02:00",
+  drawsAt: "2026-08-22T22:00:00+02:00",
   organizer: "SotaKun",
   legalOrganizer: "Jose Antonio Diaz Llamas",
   collaborator: "Niebla Tattooer",
@@ -39,7 +39,7 @@ export const nieblaGiveaway = {
     "Certificado de autenticidad, exclusividad y numeración",
   ],
   pendingDecisions: [
-    "Enlace del directo del 15 de agosto",
+    "Enlace del directo del 22 de agosto",
   ],
 } as const;
 
@@ -115,7 +115,7 @@ export const nieblaGiveawayFaq = [
   },
   {
     question: "¿Cómo sabré si he ganado?",
-    answer: "La extracción se realizará en directo el 15 de agosto de 2026 a las 22:00, hora de Madrid. Se intentará contactar primero mediante la cuenta de Discord vinculada y, si se ha facilitado, mediante correo electrónico. El ganador dispondrá de 72 horas para responder antes de acudir por orden a los tres suplentes.",
+    answer: "La extracción se realizará en directo el 22 de agosto de 2026 a las 22:00, hora de Madrid. Se intentará contactar primero mediante la cuenta de Discord vinculada y, si se ha facilitado, mediante correo electrónico. El ganador dispondrá de 72 horas para responder antes de acudir por orden a los tres suplentes.",
   },
   {
     question: "¿Puedo recibir dinero en lugar del premio?",
