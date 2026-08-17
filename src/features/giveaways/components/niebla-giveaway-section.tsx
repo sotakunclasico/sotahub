@@ -38,8 +38,8 @@ export function NieblaGiveawaySection() {
           </div>
           <div className="flex flex-col justify-center p-7 text-center md:p-10 lg:text-left">
             <span className="eyebrow">EXTRACCIÓN EN DIRECTO</span>
-            <p className="mt-3 font-serif text-4xl text-[#e2c89b]">22 de agosto de 2026</p>
-            <p className="mt-3 text-sm leading-7 text-[#8d806d]">El censo se cerrará el 22 de agosto a las 21:30 y la extracción comenzará a las 22:00, hora de Madrid. El enlace al directo se añadirá cuando esté programado.</p>
+            <p className="mt-3 font-serif text-4xl text-[#e2c89b]">31 de agosto de 2026</p>
+            <p className="mt-3 text-sm leading-7 text-[#8d806d]">El censo se cerrará el 31 de agosto a las 21:30 y la extracción comenzará a las 22:00, hora de Madrid. El enlace al directo se añadirá cuando esté programado.</p>
             <div className="mt-7 grid grid-cols-2 gap-3">
               <div className="border border-[#725532]/50 bg-black/35 p-4 text-center">
                 <p className="font-serif text-4xl text-[#d7ad68]">{remainingDays}</p>
