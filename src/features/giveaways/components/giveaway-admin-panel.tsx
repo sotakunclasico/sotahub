@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { GiveawayCandidate, GiveawayDrawResult } from "../giveaway-draw.types";
 
-export function GiveawayAdminPanel({ initialCandidates }: { initialCandidates: GiveawayCandidate[] }) {
-  const [title, setTitle] = useState("Sorteo especial SotaKun × Niebla Tattooer");
+export function GiveawayAdminPanel({ initialCandidates, defaultTitle }: { initialCandidates: GiveawayCandidate[]; defaultTitle: string }) {
+  const [title, setTitle] = useState(defaultTitle);
   const [exclusions, setExclusions] = useState<string[]>([]);
   const [newExclusion, setNewExclusion] = useState("");
   const [confirmation, setConfirmation] = useState("");

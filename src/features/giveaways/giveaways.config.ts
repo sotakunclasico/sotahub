@@ -11,6 +11,8 @@ export const giveawayMilestones: GiveawayMilestone[] = [
   { subscribers: 1000, prize: "World of Warcraft: Midnight — edición básica" },
 ];
 
+export const highestConfirmedMilestone = 400;
+
 export const giveawayHistory = [
   {
     milestone: 300,
@@ -21,6 +23,16 @@ export const giveawayHistory = [
     winner: "Mariano",
     username: "@marianoreppc6136",
     note: "Ganador del sorteo y actual número 1 del ranking de participación.",
+  },
+  {
+    milestone: 400,
+    label: "400 suscriptores",
+    title: "Hito de 400 suscriptores",
+    prize: "1 mes de World of Warcraft",
+    status: "pending",
+    winner: null,
+    username: null,
+    note: "Hito alcanzado. Sorteo programado para el viernes 21 de agosto de 2026 a las 22:00, hora de Madrid.",
   },
   {
     milestone: 350,
@@ -42,8 +54,13 @@ export const pointsRules = [
 ] as const;
 
 export function getCurrentMilestone(subscribers: number): GiveawayMilestone {
-  return giveawayMilestones.find((milestone) => milestone.subscribers > subscribers)
+  const effectiveSubscribers = Math.max(subscribers, highestConfirmedMilestone);
+  return giveawayMilestones.find((milestone) => milestone.subscribers > effectiveSubscribers)
     ?? giveawayMilestones[giveawayMilestones.length - 1];
+}
+
+export function isGiveawayMilestoneReached(subscribers: number, milestone: number): boolean {
+  return milestone <= highestConfirmedMilestone || subscribers >= milestone;
 }
 
 export function getMilestoneProgress(subscribers: number, target: number): number {
