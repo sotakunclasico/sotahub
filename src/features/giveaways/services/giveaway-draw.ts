@@ -5,11 +5,11 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getCommunityRanking } from "@/features/ranking/services/community-ranking";
 import type { GiveawayCandidate, GiveawayDrawResult } from "../giveaway-draw.types";
+import { getGiveawayEntryCount } from "../giveaway-rules";
 import { nieblaGiveaway } from "../niebla-giveaway.config";
 
 const drawHistoryPath = path.join(process.cwd(), "data", "giveaway-draws.json");
 const cloudflareDrawHistoryKey = "giveaways/draw-history.json";
-const minimumPoints = 5;
 
 type GiveawayBucketBinding = {
   get(key: string): Promise<{ json(): Promise<unknown> } | null>;
@@ -28,8 +28,8 @@ export async function getGiveawayCandidates(exclusions: string[]): Promise<{ can
   const excluded = exclusions.map(canonical).filter(Boolean);
   const ranking = await getCommunityRanking();
   const weighted = ranking
-    .filter((entry) => entry.points > minimumPoints && !excluded.some((value) => canonical(entry.username).includes(value)))
-    .map((entry) => ({ username: entry.username, points: entry.points, entries: Math.floor(entry.points / minimumPoints), probability: 0 }));
+    .map((entry) => ({ username: entry.username, points: entry.points, entries: getGiveawayEntryCount(entry.points), probability: 0 }))
+    .filter((entry) => entry.entries > 0 && !excluded.some((value) => canonical(entry.username).includes(value)));
   const totalEntries = weighted.reduce((total, entry) => total + entry.entries, 0);
   return { candidates: weighted.map((entry) => ({ ...entry, probability: totalEntries ? entry.entries / totalEntries * 100 : 0 })), totalEntries };
 }

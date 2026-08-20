@@ -1,3 +1,5 @@
+import { giveawayMinimumPoints, giveawayPointsPerEntry } from "./giveaway-rules";
+
 export const nieblaGiveaway = {
   name: "Sorteo especial SotaKun × Niebla Tattooer",
   slug: "niebla-tattooer",
@@ -20,8 +22,8 @@ export const nieblaGiveaway = {
   tattooMinimumAge: 18,
   youtubeSubscriptionRequired: false,
   discordMembershipRequired: false,
-  minimumPointsExclusive: 5,
-  pointsPerEntry: 5,
+  minimumPoints: giveawayMinimumPoints,
+  pointsPerEntry: giveawayPointsPerEntry,
   maximumEntries: null,
   winners: 1,
   alternateWinners: 3,
@@ -83,15 +85,15 @@ export const nieblaGiveawayFaq = [
   },
   {
     question: "¿Cuántos puntos necesito?",
-    answer: "Debes tener más de 5 puntos cuando se cierre el censo. Con la regla actual, 5 puntos exactos no son suficientes; 5,1 puntos sí superan el mínimo.",
+    answer: "Debes tener al menos 5 puntos cuando se cierre el censo. Con 5,0 puntos exactos ya obtienes una participación.",
   },
   {
     question: "¿Tengo que estar suscrito o pertenecer al Discord?",
-    answer: "No. La participación depende del ranking y de superar los 5 puntos. La suscripción al canal y la pertenencia al Discord no son requisitos de entrada.",
+    answer: "No. La participación depende del ranking y de alcanzar al menos 5 puntos. La suscripción al canal y la pertenencia al Discord no son requisitos de entrada.",
   },
   {
     question: "¿Cómo aumentan mis posibilidades?",
-    answer: "Cada bloque completo de 5 puntos genera una participación: 6 puntos son 1 participación, 15 puntos son 3 y 50 puntos son 10.",
+    answer: "Cada bloque completo de 5 puntos genera una participación: 5 puntos son 1 participación, 10 puntos son 2, 15 puntos son 3 y 50 puntos son 10.",
   },
   {
     question: "¿Puedo elegir entre el pack y el tatuaje?",

@@ -46,7 +46,7 @@ export function NieblaGiveawaySection() {
                 <p className="mt-1 text-[10px] tracking-widest text-[#756957] uppercase">días hasta el cierre</p>
               </div>
               <div className="border border-[#725532]/50 bg-black/35 p-4 text-center">
-                <p className="font-serif text-4xl text-[#d7ad68]">&gt;5</p>
+                <p className="font-serif text-4xl text-[#d7ad68]">5,0</p>
                 <p className="mt-1 text-[10px] tracking-widest text-[#756957] uppercase">puntos mínimos</p>
               </div>
             </div>
@@ -98,9 +98,9 @@ export function NieblaGiveawaySection() {
           <Trophy className="text-[#c99b52]"/>
           <div><span className="eyebrow">PARTICIPACIONES PONDERADAS</span><h3 className="mt-3 font-serif text-3xl text-[#dec59b]">Más puntos, más posibilidades</h3></div>
         </div>
-        <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-7 text-[#887c6b]">Debes superar los 5 puntos. Cada bloque completo de 5 puntos genera una participación en la extracción, sin un máximo configurado actualmente.</p>
+        <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-7 text-[#887c6b]">Debes alcanzar al menos 5 puntos. Cada bloque completo de 5 puntos genera una participación en la extracción, sin un máximo configurado actualmente.</p>
         <div className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-3">
-          {[["6 puntos","1 participación"],["15 puntos","3 participaciones"],["50 puntos","10 participaciones"]].map(([points, entries]) => <div className="border border-[#725532]/45 bg-black/25 p-4 text-center" key={points}><p className="font-serif text-xl text-[#d8bd91]">{points}</p><p className="mt-1 text-xs text-[#8b7d68]">{entries}</p></div>)}
+          {[["5 puntos","1 participación"],["10 puntos","2 participaciones"],["50 puntos","10 participaciones"]].map(([points, entries]) => <div className="border border-[#725532]/45 bg-black/25 p-4 text-center" key={points}><p className="font-serif text-xl text-[#d8bd91]">{points}</p><p className="mt-1 text-xs text-[#8b7d68]">{entries}</p></div>)}
         </div>
         <div className="mx-auto mt-6 flex max-w-3xl gap-3 border border-[#765635]/40 bg-[#6c3d1f]/10 p-4 text-left text-xs leading-6 text-[#8e806d]"><ShieldCheck className="mt-1 shrink-0 text-[#c69a53]" size={18}/><p>Una persona y una identidad. Las cuentas duplicadas, bots, spam o actividad artificial pueden excluirse. El censo se cerrará antes de la extracción y solo podrá corregirse por fraude o error acreditado.</p></div>
       </Card>

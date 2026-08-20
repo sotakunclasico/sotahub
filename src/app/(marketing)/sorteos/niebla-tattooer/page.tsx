@@ -14,8 +14,8 @@ export const metadata = {
 };
 
 const participationExamples = [
-  ["6 puntos", "1 participación"],
-  ["15 puntos", "3 participaciones"],
+  ["5 puntos", "1 participación"],
+  ["10 puntos", "2 participaciones"],
   ["50 puntos", "10 participaciones"],
 ] as const;
 
@@ -85,7 +85,7 @@ export default function NieblaGiveawayRulesPage() {
 
     <Section eyebrow="03 · PARTICIPACIÓN" title="Regla utilizada en la extracción">
       <Card className="mx-auto max-w-4xl p-7 text-center md:p-9">
-        <p className="font-serif text-xl leading-8 text-[#a6977e]">Para entrar en el censo debes aparecer en el ranking y tener <strong className="text-[#e0bd7c]">más de 5 puntos</strong> antes del cierre. Cinco puntos exactos no bastan; 5,1 puntos sí permiten participar. No es obligatorio estar suscrito al canal ni pertenecer al Discord.</p>
+        <p className="font-serif text-xl leading-8 text-[#a6977e]">Para entrar en el censo debes aparecer en el ranking y tener <strong className="text-[#e0bd7c]">al menos 5 puntos</strong> antes del cierre. Cinco puntos exactos ya generan una participación. No es obligatorio estar suscrito al canal ni pertenecer al Discord.</p>
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {participationExamples.map(([points, entries]) => <div className="border border-[#705432]/45 bg-black/25 p-4" key={points}><p className="font-serif text-xl text-[#d8bd91]">{points}</p><p className="mt-1 text-xs text-[#887b68]">{entries}</p></div>)}
         </div>
