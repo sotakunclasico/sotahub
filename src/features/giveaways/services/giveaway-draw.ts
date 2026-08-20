@@ -8,7 +8,17 @@ import type { GiveawayCandidate, GiveawayDrawResult } from "../giveaway-draw.typ
 import { nieblaGiveaway } from "../niebla-giveaway.config";
 
 const drawHistoryPath = path.join(process.cwd(), "data", "giveaway-draws.json");
+const cloudflareDrawHistoryKey = "giveaways/draw-history.json";
 const minimumPoints = 5;
+
+type GiveawayBucketBinding = {
+  get(key: string): Promise<{ json(): Promise<unknown> } | null>;
+  put(
+    key: string,
+    value: string,
+    options?: { httpMetadata?: { contentType?: string } },
+  ): Promise<unknown>;
+};
 
 function canonical(value: string) {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -24,19 +34,49 @@ export async function getGiveawayCandidates(exclusions: string[]): Promise<{ can
   return { candidates: weighted.map((entry) => ({ ...entry, probability: totalEntries ? entry.entries / totalEntries * 100 : 0 })), totalEntries };
 }
 
-async function readHistory(): Promise<GiveawayDrawResult[]> {
+async function getCloudflareGiveawayBucket() {
+  if (process.env.SOTAHUB_RUNTIME !== "cloudflare") return null;
+  const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+  const { env } = await getCloudflareContext({ async: true });
+  const bucket = (env as typeof env & { RANKING_BUCKET?: GiveawayBucketBinding }).RANKING_BUCKET;
+  if (!bucket) throw new Error("El almacenamiento de sorteos no está configurado.");
+  return bucket;
+}
+
+async function readLocalHistory(): Promise<GiveawayDrawResult[]> {
   try { return JSON.parse(await readFile(drawHistoryPath, "utf8")) as GiveawayDrawResult[]; }
   catch { return []; }
 }
 
+async function readCloudflareHistory(bucket: GiveawayBucketBinding): Promise<GiveawayDrawResult[]> {
+  const object = await bucket.get(cloudflareDrawHistoryKey);
+  if (!object) return [];
+  const history = await object.json();
+  return Array.isArray(history) ? history as GiveawayDrawResult[] : [];
+}
+
 async function saveResult(result: GiveawayDrawResult) {
+  const bucket = await getCloudflareGiveawayBucket();
+  if (bucket) {
+    const history = await readCloudflareHistory(bucket);
+    await bucket.put(
+      cloudflareDrawHistoryKey,
+      `${JSON.stringify([result, ...history], null, 2)}\n`,
+      { httpMetadata: { contentType: "application/json; charset=utf-8" } },
+    );
+    return;
+  }
   await mkdir(path.dirname(drawHistoryPath), { recursive: true });
   const temporary = `${drawHistoryPath}.${process.pid}.tmp`;
-  await writeFile(temporary, `${JSON.stringify([result, ...await readHistory()], null, 2)}\n`, "utf8");
+  await writeFile(temporary, `${JSON.stringify([result, ...await readLocalHistory()], null, 2)}\n`, "utf8");
   await rename(temporary, drawHistoryPath);
 }
 
-export async function runGiveawayDraw(title: string, exclusions: string[]): Promise<GiveawayDrawResult> {
+export async function runGiveawayDraw(
+  title: string,
+  exclusions: string[],
+  options: { persist?: boolean } = {},
+): Promise<GiveawayDrawResult> {
   const { candidates, totalEntries } = await getGiveawayCandidates(exclusions);
   if (!candidates.length || totalEntries < 1) throw new Error("No hay participantes elegibles.");
   const remainingCandidates = [...candidates];
@@ -63,9 +103,9 @@ export async function runGiveawayDraw(title: string, exclusions: string[]): Prom
   const fingerprint = createHash("sha256").update(JSON.stringify(candidates)).digest("hex");
   const appliedExclusions = [...new Set(exclusions)];
   const result: GiveawayDrawResult = {
-    id: randomUUID(), title, createdAt: new Date().toISOString(), winner,
+    id: randomUUID(), title, createdAt: new Date().toISOString(), persisted: options.persist !== false, winner,
     eligibleUsers: candidates.length, totalEntries, exclusions: appliedExclusions, rankingFingerprint: fingerprint, alternates,
   };
-  await saveResult(result);
+  if (result.persisted) await saveResult(result);
   return result;
 }

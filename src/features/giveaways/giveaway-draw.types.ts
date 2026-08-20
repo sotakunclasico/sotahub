@@ -9,6 +9,7 @@ export interface GiveawayDrawResult {
   id: string;
   title: string;
   createdAt: string;
+  persisted: boolean;
   winner: GiveawayCandidate;
   eligibleUsers: number;
   totalEntries: number;
