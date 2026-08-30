@@ -49,9 +49,12 @@ def main() -> None:
     state = DATA_DIRECTORY / "community-ranking-state.json"
     checkpoints = DATA_DIRECTORY / ".community-ranking-checkpoints"
     activity = DATA_DIRECTORY / "community_activity_log.csv"
+    comment_evidence = DATA_DIRECTORY / "community_comment_evidence.json"
 
     upload_json(client, ranking, "snapshots/community_ranking.json")
     upload_json(client, state, "snapshots/community-ranking-state.json")
+    if comment_evidence.exists():
+        upload_json(client, comment_evidence, "snapshots/community-comment-evidence.json")
 
     with tempfile.TemporaryDirectory(prefix="sotahub-r2-seed-") as temporary:
         archive = Path(temporary) / "community-ranking-checkpoints.tar.gz"
@@ -60,6 +63,8 @@ def main() -> None:
                 bundle.add(checkpoints, arcname=".community-ranking-checkpoints")
             if activity.exists():
                 bundle.add(activity, arcname="community_activity_log.csv")
+            if comment_evidence.exists():
+                bundle.add(comment_evidence, arcname="community_comment_evidence.json")
         client.upload_file(
             str(archive),
             BUCKET,

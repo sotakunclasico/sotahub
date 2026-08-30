@@ -9,6 +9,7 @@ import re
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from urllib.parse import urlencode
 
 import requests
 from yt_dlp import YoutubeDL
@@ -39,6 +40,31 @@ def get_api_key():
 
 def normalize_username(username):
     return (username or "").lower().replace("@", "").strip()
+
+
+def build_comment_url(video_id, comment_id):
+    if not video_id or not comment_id:
+        return None
+    return f"https://www.youtube.com/watch?{urlencode({'v': video_id, 'lc': comment_id})}"
+
+
+def normalize_comment_record(comment, video_id):
+    if isinstance(comment, dict):
+        comment_id = comment.get("comment_id") or None
+        return {
+            "username": normalize_username(comment.get("username")),
+            "content": comment.get("content") or "",
+            "comment_id": comment_id,
+            "comment_url": comment.get("comment_url") or build_comment_url(video_id, comment_id),
+        }
+    if isinstance(comment, (list, tuple)) and len(comment) >= 2:
+        return {
+            "username": normalize_username(comment[0]),
+            "content": comment[1] or "",
+            "comment_id": None,
+            "comment_url": None,
+        }
+    return None
 
 
 def quiet_options():
@@ -157,7 +183,13 @@ def seed_checkpoints_from_activity_log(channel_videos):
             if not video_id or not username:
                 continue
             if row.get("type") == "comment":
-                videos[video_id]["comments"].append((username, row.get("content", "")))
+                comment_id = row.get("comment_id", "").strip() or None
+                videos[video_id]["comments"].append({
+                    "username": username,
+                    "content": row.get("content", ""),
+                    "comment_id": comment_id,
+                    "comment_url": row.get("comment_url", "").strip() or build_comment_url(video_id, comment_id),
+                })
             elif row.get("type") == "live_message":
                 videos[video_id]["messages"].append((username, row.get("content", "")))
 
@@ -237,8 +269,15 @@ def get_video_comments(video_id):
         response.raise_for_status()
         payload = response.json()
         for item in payload.get("items", []):
-            snippet = item["snippet"]["topLevelComment"]["snippet"]
-            comments.append((normalize_username(snippet.get("authorDisplayName")), snippet.get("textDisplay") or ""))
+            top_level_comment = item["snippet"]["topLevelComment"]
+            snippet = top_level_comment["snippet"]
+            comment_id = top_level_comment.get("id")
+            comments.append({
+                "username": normalize_username(snippet.get("authorDisplayName")),
+                "content": snippet.get("textDisplay") or "",
+                "comment_id": comment_id,
+                "comment_url": build_comment_url(video_id, comment_id),
+            })
         page_token = payload.get("nextPageToken")
         if not page_token:
             return comments
@@ -251,28 +290,59 @@ def build_outputs(results):
     unique_videos = defaultdict(set)
     unique_lives = defaultdict(set)
     activity = []
+    comment_evidence = []
 
     for result in results:
         video_id = result["video_id"]
-        for username, content in result["comments"]:
+        for raw_comment in result["comments"]:
+            comment = normalize_comment_record(raw_comment, video_id)
+            if not comment or not comment["username"]:
+                continue
+            username = comment["username"]
+            content = comment["content"]
+            first_comment_in_video = video_id not in unique_videos[username]
             points[username] += 2
             comments_count[username] += 1
-            activity.append({"username": username, "type": "comment", "video_id": video_id, "points": 2, "content": content})
-            if video_id not in unique_videos[username]:
+            activity.append({
+                "username": username,
+                "type": "comment",
+                "video_id": video_id,
+                "points": 2,
+                "content": content,
+                "comment_id": comment["comment_id"] or "",
+                "comment_url": comment["comment_url"] or "",
+            })
+            if first_comment_in_video:
                 points[username] += 3
                 unique_videos[username].add(video_id)
-                activity.append({"username": username, "type": "unique_video_comment", "video_id": video_id, "points": 3, "content": ""})
+                activity.append({
+                    "username": username,
+                    "type": "unique_video_comment",
+                    "video_id": video_id,
+                    "points": 3,
+                    "content": "",
+                    "comment_id": comment["comment_id"] or "",
+                    "comment_url": comment["comment_url"] or "",
+                })
+            comment_evidence.append({
+                "username": username,
+                "video_id": video_id,
+                "comment_id": comment["comment_id"],
+                "comment_url": comment["comment_url"],
+                "points_awarded": 5 if first_comment_in_video else 2,
+                "includes_unique_video_bonus": first_comment_in_video,
+            })
 
         users_in_live = set()
         for username, content in result["messages"]:
             points[username] += 0.1
             live_messages_count[username] += 1
-            activity.append({"username": username, "type": "live_message", "video_id": video_id, "points": 0.1, "content": content})
+            activity.append({"username": username, "type": "live_message", "video_id": video_id, "points": 0.1, "content": content, "comment_id": "", "comment_url": ""})
             if username not in users_in_live:
                 users_in_live.add(username)
                 points[username] += 1
                 unique_lives[username].add(video_id)
-                activity.append({"username": username, "type": "unique_live", "video_id": video_id, "points": 1, "content": ""})
+                activity.append({"username": username, "type": "unique_live", "video_id": video_id, "points": 1, "content": "", "comment_id": "", "comment_url": ""})
 
     ranking = [
         {
@@ -285,10 +355,10 @@ def build_outputs(results):
         }
         for username, score in sorted(points.items(), key=lambda item: item[1], reverse=True)
     ]
-    return ranking, activity
+    return ranking, activity, comment_evidence
 
 
-def export(ranking, activity, partial=False):
+def export(ranking, activity, comment_evidence, partial=False):
     suffix = ".partial" if partial else ""
     with (OUTPUT_DIRECTORY / f"community_ranking{suffix}.json").open("w", encoding="utf-8") as stream:
         json.dump(ranking, stream, ensure_ascii=False, indent=2)
@@ -297,9 +367,11 @@ def export(ranking, activity, partial=False):
         writer.writeheader()
         writer.writerows(ranking)
     with (OUTPUT_DIRECTORY / f"community_activity_log{suffix}.csv").open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=["username", "type", "video_id", "points", "content"])
+        writer = csv.DictWriter(stream, fieldnames=["username", "type", "video_id", "points", "content", "comment_id", "comment_url"])
         writer.writeheader()
         writer.writerows(activity)
+    with (OUTPUT_DIRECTORY / f"community_comment_evidence{suffix}.json").open("w", encoding="utf-8") as stream:
+        json.dump(comment_evidence, stream, ensure_ascii=False, indent=2)
 
 
 def parse_args():
@@ -335,8 +407,8 @@ def main():
             if result.get("source") != "checkpoint" or result["error"]:
                 print(f"[{index}/{len(videos)}] {result['video_id']}: {len(result['comments'])} comentarios, {len(result['messages'])} mensajes" + (f" · ERROR: {result['error']}" if result["error"] else ""), flush=True)
 
-    ranking, activity = build_outputs(results)
-    export(ranking, activity, partial=errors > 0)
+    ranking, activity, comment_evidence = build_outputs(results)
+    export(ranking, activity, comment_evidence, partial=errors > 0)
     shutil.rmtree(CACHE_DIRECTORY, ignore_errors=True)
     elapsed = time.perf_counter() - started
     print(f"Finalizado: {len(videos)} vídeos, {reused_checkpoints} desde caché, {sum(len(item['comments']) for item in results)} comentarios, {sum(len(item['messages']) for item in results)} mensajes, {errors} errores, {elapsed / 60:.2f} minutos", flush=True)

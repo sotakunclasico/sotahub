@@ -12,6 +12,7 @@ from .settings import Settings
 
 STATE_KEY = "snapshots/community-ranking-state.json"
 RANKING_KEY = "snapshots/community_ranking.json"
+COMMENT_EVIDENCE_KEY = "snapshots/community-comment-evidence.json"
 CHECKPOINTS_KEY = "engine/community-ranking-checkpoints.tar.gz"
 
 

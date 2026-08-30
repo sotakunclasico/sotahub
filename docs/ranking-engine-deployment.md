@@ -9,6 +9,7 @@ Así, actualizar el ranking no requiere commits ni nuevos despliegues.
 - `sotahub`: aplicación Next.js desplegada en Cloudflare Workers.
 - `sotahub-ranking-engine`: FastAPI + `yt-dlp` desplegado en Render.
 - `sotahub-ranking`: bucket R2 privado con snapshots y checkpoints.
+- `snapshots/community-comment-evidence.json`: evidencia privada con el ID y enlace de cada comentario que genera puntos; no incluye referencias de mensajes de directos.
 - `sotahub-ranking-scheduler`: Worker pequeño con dos Cron Triggers.
 
 ## 1. Crear el bucket R2

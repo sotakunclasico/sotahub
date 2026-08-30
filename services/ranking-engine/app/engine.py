@@ -13,7 +13,7 @@ from typing import Literal
 from uuid import uuid4
 
 from .settings import Settings
-from .storage import CHECKPOINTS_KEY, RANKING_KEY, STATE_KEY, RankingStorage
+from .storage import COMMENT_EVIDENCE_KEY, CHECKPOINTS_KEY, RANKING_KEY, STATE_KEY, RankingStorage
 
 
 ScanMode = Literal["incremental", "full"]
@@ -115,6 +115,8 @@ class RankingEngine:
 
             ranking_path = workspace / "community_ranking.json"
             ranking = json.loads(ranking_path.read_text(encoding="utf-8"))
+            comment_evidence_path = workspace / "community_comment_evidence.json"
+            comment_evidence = json.loads(comment_evidence_path.read_text(encoding="utf-8"))
             completed_at = utc_now()
             success = {
                 **running,
@@ -133,6 +135,7 @@ class RankingEngine:
                 "entries": len(ranking),
                 "error": None,
             }
+            self.storage.put_json(COMMENT_EVIDENCE_KEY, comment_evidence)
             self.storage.put_json(RANKING_KEY, ranking)
             self.storage.put_json(STATE_KEY, success)
         except Exception as error:
@@ -152,6 +155,7 @@ class RankingEngine:
     def _upload_checkpoints(self, workspace: Path, archive: Path) -> None:
         checkpoint_directory = workspace / ".community-ranking-checkpoints"
         activity_log = workspace / "community_activity_log.csv"
+        comment_evidence = workspace / "community_comment_evidence.json"
         with tarfile.open(archive, "w:gz") as bundle:
             if checkpoint_directory.exists():
                 bundle.add(
@@ -160,4 +164,6 @@ class RankingEngine:
                 )
             if activity_log.exists():
                 bundle.add(activity_log, arcname="community_activity_log.csv")
+            if comment_evidence.exists():
+                bundle.add(comment_evidence, arcname="community_comment_evidence.json")
         self.storage.upload(CHECKPOINTS_KEY, archive, "application/gzip")
