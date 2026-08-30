@@ -15,7 +15,7 @@ storage = RankingStorage(settings)
 engine = RankingEngine(settings, storage)
 app = FastAPI(
     title="SotaHub Community Ranking Engine",
-    version="1.0.0",
+    version="1.1.0",
     docs_url=None,
     redoc_url=None,
 )
@@ -37,6 +37,7 @@ def health() -> dict:
         "status": "ok",
         "rankingStatus": current.get("status", "idle"),
         "runMode": current.get("runMode"),
+        "commentEvidenceVersion": 1,
     }
 
 
