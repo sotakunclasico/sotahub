@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Section } from "@/components/ui/section";
 import {
-  getNieblaDrawDaysRemaining,
   getNieblaGiveawayStatus,
   nieblaGiveaway,
   nieblaGiveawayFaq,
@@ -13,8 +12,8 @@ import {
 } from "../niebla-giveaway.config";
 
 export function NieblaGiveawaySection() {
-  const remainingDays = getNieblaDrawDaysRemaining();
   const status = getNieblaGiveawayStatus();
+  const result = nieblaGiveaway.result;
 
   return <>
     <Section
@@ -34,25 +33,26 @@ export function NieblaGiveawaySection() {
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-black/15 lg:to-black"/>
-            <Badge className="absolute left-5 top-5"><Sparkles size={12}/> {status === "open" ? "PARTICIPACIÓN ABIERTA" : status === "upcoming" ? "SORTEO PRÓXIMO" : "PARTICIPACIÓN CERRADA"}</Badge>
+            <Badge className="absolute left-5 top-5"><Sparkles size={12}/> {status === "completed" ? "SORTEO COMPLETADO" : status === "open" ? "PARTICIPACIÓN ABIERTA" : status === "upcoming" ? "SORTEO PRÓXIMO" : "PARTICIPACIÓN CERRADA"}</Badge>
           </div>
           <div className="flex flex-col justify-center p-7 text-center md:p-10 lg:text-left">
-            <span className="eyebrow">EXTRACCIÓN EN DIRECTO</span>
-            <p className="mt-3 font-serif text-4xl text-[#e2c89b]">31 de agosto de 2026</p>
-            <p className="mt-3 text-sm leading-7 text-[#8d806d]">El censo se cerrará el 31 de agosto a las 21:30 y la extracción comenzará a las 22:00, hora de Madrid. El enlace al directo se añadirá cuando esté programado.</p>
+            <span className="eyebrow">RESULTADO OFICIAL</span>
+            <p className="mt-3 font-serif text-4xl text-[#e2c89b]">@{result.winner.username}</p>
+            <p className="mt-3 text-sm leading-7 text-[#8d806d]">Ganador del sorteo celebrado el 31 de agosto de 2026 a las 22:01, hora de Madrid. Dispondrá de 72 horas desde el primer aviso para responder y escoger una de las dos opciones.</p>
             <div className="mt-7 grid grid-cols-2 gap-3">
               <div className="border border-[#725532]/50 bg-black/35 p-4 text-center">
-                <p className="font-serif text-4xl text-[#d7ad68]">{remainingDays}</p>
-                <p className="mt-1 text-[10px] tracking-widest text-[#756957] uppercase">días hasta el cierre</p>
+                <p className="font-serif text-4xl text-[#d7ad68]">{result.eligibleUsers}</p>
+                <p className="mt-1 text-[10px] tracking-widest text-[#756957] uppercase">usuarios elegibles</p>
               </div>
               <div className="border border-[#725532]/50 bg-black/35 p-4 text-center">
-                <p className="font-serif text-4xl text-[#d7ad68]">5,0</p>
-                <p className="mt-1 text-[10px] tracking-widest text-[#756957] uppercase">puntos mínimos</p>
+                <p className="font-serif text-4xl text-[#d7ad68]">{result.totalEntries}</p>
+                <p className="mt-1 text-[10px] tracking-widest text-[#756957] uppercase">participaciones</p>
               </div>
             </div>
+            <p className="mt-5 text-xs leading-6 text-[#807462]">Suplentes por orden: {result.alternates.map((alternate) => `@${alternate.username}`).join(", ")}.</p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Button href="/sorteos/niebla-tattooer">Ver bases completas</Button>
-              <Button href="/ranking" variant="secondary">Consultar mis puntos</Button>
+              <Button href="/ranking" variant="secondary">Consultar ranking</Button>
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { giveawayMinimumPoints, giveawayPointsPerEntry } from "./giveaway-rules"
 export const nieblaGiveaway = {
   name: "Sorteo especial SotaKun × Niebla Tattooer",
   slug: "niebla-tattooer",
-  status: "open",
+  status: "completed",
   drawDate: "2026-08-31",
   drawTime: "22:00",
   censusCloseTime: "21:30",
@@ -40,9 +40,21 @@ export const nieblaGiveaway = {
     "2 cartas de autor: SotaKun y Niebla Tattooer",
     "Certificado de autenticidad, exclusividad y numeración",
   ],
-  pendingDecisions: [
-    "Enlace del directo del 31 de agosto",
-  ],
+  result: {
+    completedAt: "2026-08-31T22:01:36+02:00",
+    eligibleUsers: 81,
+    totalEntries: 183,
+    winner: {
+      username: "marianoreppc6136",
+      points: 204.4,
+      entries: 40,
+    },
+    alternates: [
+      { username: "gabrielduarte766", points: 16.6, entries: 3 },
+      { username: "simonkofoed1826", points: 9.9, entries: 1 },
+      { username: "kuroi448", points: 10, entries: 2 },
+    ],
+  },
 } as const;
 
 export const nieblaPrizeArtwork = [
@@ -130,6 +142,7 @@ export function getNieblaDrawDaysRemaining(now = Date.now()) {
 }
 
 export function getNieblaGiveawayStatus(now = Date.now()) {
+  if (nieblaGiveaway.status === "completed") return "completed";
   if (now < Date.parse(nieblaGiveaway.startsAt)) return "upcoming";
   if (now >= Date.parse(nieblaGiveaway.closesAt)) return "closed";
   return "open";

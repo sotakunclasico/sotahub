@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarClock, Check, ExternalLink, Gift, LockKeyhole, Scale, ShieldCheck, Trophy, Users } from "lucide-react";
+import { CalendarClock, Check, ExternalLink, Gift, LockKeyhole, Scale, ShieldCheck, Trophy, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Bases · Sorteo SotaKun × Niebla Tattooer",
-  description: "Condiciones del sorteo especial SotaKun × Niebla Tattooer previsto para el 31 de agosto de 2026.",
+  description: "Resultado y condiciones del sorteo especial SotaKun × Niebla Tattooer celebrado el 31 de agosto de 2026.",
 };
 
 const participationExamples = [
@@ -21,20 +21,21 @@ const participationExamples = [
 
 export default function NieblaGiveawayRulesPage() {
   const status = getNieblaGiveawayStatus();
+  const result = nieblaGiveaway.result;
 
   return <>
     <PageHeader
-      eyebrow={`BASES DEL SORTEO · PARTICIPACIÓN ${status === "open" ? "ABIERTA" : "CERRADA"}`}
+      eyebrow="BASES DEL SORTEO · EXTRACCIÓN COMPLETADA"
       title="SotaKun × Niebla Tattooer"
-      description="Condiciones vigentes del sorteo especial. El censo cierra el 31 de agosto de 2026 a las 21:30 y la extracción comienza a las 22:00, hora de Madrid."
+      description="Condiciones y resultado oficial del sorteo especial celebrado el 31 de agosto de 2026."
     />
 
     <section className="shell -mt-8 pb-8">
       <Card className="border-[#71824f]/60 bg-[#456027]/10 p-6 text-center md:p-8">
         <ShieldCheck className="mx-auto text-[#a7bd78]" size={27}/>
-        <Badge className="mt-4">{status === "open" ? "PARTICIPACIÓN ABIERTA" : "PARTICIPACIÓN CERRADA"}</Badge>
-        <h2 className="mt-4 font-serif text-2xl text-[#dec397]">Censo abierto hasta el comienzo del sorteo</h2>
-        <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-[#8f816d]">El censo se cerrará el 31 de agosto de 2026 a las 21:30, hora de Madrid. Durante los siguientes 30 minutos se congelará el ranking, se revisarán duplicados y se calculará el número definitivo de participaciones. La extracción comenzará a las 22:00.</p>
+        <Badge className="mt-4">SORTEO COMPLETADO</Badge>
+        <h2 className="mt-4 font-serif text-3xl text-[#dec397]">Ganador: @{result.winner.username}</h2>
+        <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-[#8f816d]">La extracción se registró el 31 de agosto de 2026 a las 22:01, hora de Madrid, con {result.eligibleUsers} usuarios elegibles y {result.totalEntries} participaciones. Suplentes por orden: {result.alternates.map((alternate) => `@${alternate.username}`).join(", ")}.</p>
       </Card>
     </section>
 
@@ -44,7 +45,7 @@ export default function NieblaGiveawayRulesPage() {
           [CalendarClock, "Cierre y extracción", "21:30 / 22:00", "31 de agosto · hora de Madrid"],
           [Users, "Organización", nieblaGiveaway.organizer, `${nieblaGiveaway.legalOrganizer} · Colabora ${nieblaGiveaway.collaborator}`],
           [Trophy, "Selección", `${nieblaGiveaway.winners} ganador`, `${nieblaGiveaway.alternateWinners} suplentes en el mismo sorteo`],
-          [Scale, "Estado", status === "open" ? "Abierto" : "Cerrado", status === "open" ? "Participaciones activas" : "Censo cerrado"],
+          [Scale, "Estado", status === "completed" ? "Completado" : "Cerrado", status === "completed" ? "Resultado registrado" : "Censo cerrado"],
         ].map(([Icon, label, value, detail]) => {
           const ItemIcon = Icon as typeof CalendarClock;
           return <Card className="p-6 text-center" key={label as string}>
@@ -136,10 +137,14 @@ export default function NieblaGiveawayRulesPage() {
       </div>
     </Section>
 
-    <Section eyebrow="06 · INFORMACIÓN PENDIENTE" title="Datos que se añadirán después" description="Estos detalles logísticos se publicarán cuando estén disponibles sin cambiar la fecha, el sistema de puntos ni las probabilidades.">
-      <Card className="mx-auto max-w-5xl p-6 md:p-8">
-        <div className="grid gap-3 md:grid-cols-2">
-          {nieblaGiveaway.pendingDecisions.map((decision) => <div className="flex gap-3 border border-[#704c31]/35 bg-black/20 p-4 text-left text-sm leading-6 text-[#8a7c69]" key={decision}><AlertTriangle className="mt-1 shrink-0 text-[#c47d4d]" size={15}/>{decision}</div>)}
+    <Section eyebrow="06 · RESULTADO" title="Extracción registrada" description="El resultado se conserva junto con la huella del ranking utilizado en el momento del sorteo.">
+      <Card className="mx-auto max-w-5xl p-6 text-center md:p-8">
+        <Trophy className="mx-auto text-[#c99b52]" size={30}/>
+        <span className="eyebrow mt-4 block">GANADOR</span>
+        <p className="mt-3 font-serif text-4xl text-[#e0c392]">@{result.winner.username}</p>
+        <p className="mt-3 text-sm text-[#8f816d]">{result.winner.points.toLocaleString("es-ES")} puntos · {result.winner.entries} participaciones</p>
+        <div className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-3">
+          {result.alternates.map((alternate, index) => <div className="border border-[#654e34]/45 bg-black/25 p-4" key={alternate.username}><p className="text-[10px] text-[#756957]">SUPLENTE #{index + 1}</p><p className="mt-2 font-serif text-xl text-[#d5ba8c]">@{alternate.username}</p><p className="mt-1 text-xs text-[#756957]">{alternate.points.toLocaleString("es-ES")} puntos · {alternate.entries} {alternate.entries === 1 ? "participación" : "participaciones"}</p></div>)}
         </div>
       </Card>
       <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row"><Button href="/sorteos">Volver a Sorteos</Button><Button href="/ranking" variant="secondary">Consultar ranking</Button></div>
