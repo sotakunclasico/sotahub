@@ -1,4 +1,5 @@
 import { Award, BadgeCheck, Check, Clock3, Gift, MessageCircle, Radio, ShieldCheck, Sparkles, Trophy, Users } from "lucide-react";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,7 +23,39 @@ export function GiveawaysPage({ youtube, adminPanel }: { youtube: YouTubeSnapsho
 
     <Section eyebrow="EL CAMINO A LOS 1000" title="Cinco metas. Cinco recompensas." description="Estos son los hitos habituales de World of Warcraft. Funcionan de forma independiente al sorteo especial con Niebla Tattooer."><div className="grid gap-4 md:grid-cols-5">{giveawayMilestones.map((milestone) => { const reached = isGiveawayMilestoneReached(subscribers, milestone.subscribers); const active = current.subscribers === milestone.subscribers; return <Card key={milestone.subscribers} className={`relative p-5 ${active ? "border-[#c6984f]/80 shadow-[0_0_28px_rgba(177,119,48,.15)]" : ""}`}><div className="flex items-center justify-between"><span className="font-serif text-3xl text-[#d7b678]">{milestone.subscribers}</span>{reached ? <BadgeCheck size={20} className="text-[#9bba7a]"/> : active ? <Radio size={18} className="text-[#d49c4f]"/> : <Gift size={18} className="text-[#665945]"/>}</div><p className="mt-6 min-h-16 text-sm leading-6 text-[#9a8d79]">{milestone.prize}</p><span className="mt-5 block text-[10px] font-bold tracking-widest text-[#6f624e] uppercase">{reached ? "Hito alcanzado" : active ? "En progreso" : "Próximo"}</span></Card>})}</div></Section>
 
-    <Section eyebrow="HISTORIAL DE SORTEOS" title="Ganadores y sorteos pendientes" description="Un registro público de los hitos alcanzados, sus premios y el estado de cada sorteo."><div className="space-y-4">{giveawayHistory.map((entry) => { const completed = entry.status === "completed"; return <Card className={`relative overflow-hidden p-6 md:p-8 ${completed ? "border-[#88704a]/60" : "border-[#9a6639]/55"}`} key={entry.milestone}><div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-[#d3aa64] to-[#6e431d]"/><div className="grid items-center gap-6 md:grid-cols-[auto_1fr_auto]"><div className={`grid size-16 place-items-center border ${completed ? "border-[#8b744c] bg-[#88703c]/10 text-[#d5b472]" : "border-[#8d5734] bg-[#753318]/15 text-[#d28a5c]"}`}>{completed ? <Award size={28}/> : <Clock3 size={27}/>}</div><div><div className="flex flex-wrap items-center gap-3"><Badge>{entry.label}</Badge><span className={`text-[10px] font-bold tracking-widest uppercase ${completed ? "text-[#8fa274]" : "text-[#c17a51]"}`}>{completed ? "Sorteo completado" : "Sorteo pendiente"}</span></div><h3 className="mt-3 font-serif text-2xl text-[#dec69d]">{entry.title}</h3><p className="mt-2 text-sm text-[#9a8b75]">Premio: <strong className="text-[#c9aa75]">{entry.prize}</strong></p><p className="mt-2 text-sm leading-6 text-[#776d60]">{entry.note}</p>{entry.alternates.length > 0 && <p className="mt-2 text-xs leading-6 text-[#71685c]">Suplentes: {entry.alternates.join(", ")}</p>}</div><div className="min-w-52 border-l border-[#6f5636]/40 pl-6 md:text-right"><span className="eyebrow">{completed ? "GANADOR" : "ESTADO"}</span>{completed ? <><p className="mt-2 font-serif text-2xl text-[#e0c392]">{entry.winner}</p><p className="mt-1 text-xs text-[#8c7d68]">{entry.username}</p><a href="/ranking" className="mt-3 inline-flex items-center gap-1 text-xs text-[#bd914e] hover:text-[#e0b66f]"><Trophy size={13}/> Consultar ranking</a></> : <><p className="mt-2 font-serif text-xl text-[#d39a6a]">Por celebrar</p><p className="mt-1 text-xs text-[#806e5d]">Ganador aún no seleccionado</p></>}</div></div></Card>})}</div></Section>
+    <Section eyebrow="HISTORIAL DE SORTEOS" title="Ganadores y premios entregados" description="Un registro público de los hitos alcanzados, sus resultados y las pruebas disponibles de entrega.">
+      <div className="space-y-4">
+        {giveawayHistory.map((entry) => {
+          const completed = entry.status === "completed";
+          const fulfillment = "fulfillment" in entry ? entry.fulfillment : null;
+          return <Card className={`relative overflow-hidden p-6 md:p-8 ${completed ? "border-[#88704a]/60" : "border-[#9a6639]/55"}`} key={entry.milestone}>
+            <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-[#d3aa64] to-[#6e431d]"/>
+            <div className={fulfillment ? "grid gap-7 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-center" : undefined}>
+              <div className="grid items-center gap-6 md:grid-cols-[auto_1fr_auto]">
+                <div className={`grid size-16 place-items-center border ${completed ? "border-[#8b744c] bg-[#88703c]/10 text-[#d5b472]" : "border-[#8d5734] bg-[#753318]/15 text-[#d28a5c]"}`}>{completed ? <Award size={28}/> : <Clock3 size={27}/>}</div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-3"><Badge>{entry.label}</Badge><span className={`text-[10px] font-bold tracking-widest uppercase ${completed ? "text-[#8fa274]" : "text-[#c17a51]"}`}>{fulfillment ? "Premio entregado" : completed ? "Sorteo completado" : "Sorteo pendiente"}</span></div>
+                  <h3 className="mt-3 font-serif text-2xl text-[#dec69d]">{entry.title}</h3>
+                  <p className="mt-2 text-sm text-[#9a8b75]">Premio: <strong className="text-[#c9aa75]">{fulfillment?.reward ?? entry.prize}</strong></p>
+                  <p className="mt-2 text-sm leading-6 text-[#776d60]">{entry.note}</p>
+                  {entry.alternates.length > 0 && <p className="mt-2 text-xs leading-6 text-[#71685c]">Suplentes de la extracción: {entry.alternates.join(", ")}</p>}
+                </div>
+                <div className="min-w-52 border-l border-[#6f5636]/40 pl-6 md:text-right">
+                  <span className="eyebrow">{fulfillment ? "PREMIO ENTREGADO A" : completed ? "GANADOR" : "ESTADO"}</span>
+                  {completed ? <><p className="mt-2 font-serif text-2xl text-[#e0c392]">{fulfillment?.recipient ?? entry.winner}</p><p className="mt-1 text-xs text-[#8c7d68]">{fulfillment?.username ?? entry.username}</p><a href="/ranking" className="mt-3 inline-flex items-center gap-1 text-xs text-[#bd914e] hover:text-[#e0b66f]"><Trophy size={13}/> Consultar ranking</a></> : <><p className="mt-2 font-serif text-xl text-[#d39a6a]">Por celebrar</p><p className="mt-1 text-xs text-[#806e5d]">Ganador aún no seleccionado</p></>}
+                </div>
+              </div>
+              {fulfillment && <figure className="overflow-hidden border border-[#85663c]/55 bg-black/35 p-2 shadow-[0_0_30px_rgba(64,149,220,.08)]">
+                <div className="relative aspect-[941/1669] overflow-hidden bg-[#05080d]">
+                  <Image src={fulfillment.evidenceImage} alt={fulfillment.evidenceAlt} fill sizes="(max-width: 1024px) 100vw, 304px" className="object-cover"/>
+                </div>
+                <figcaption className="flex items-center justify-center gap-2 px-3 py-3 text-center text-[10px] font-bold tracking-widest text-[#91bfe5] uppercase"><BadgeCheck size={14}/> Comprobante de entrega</figcaption>
+              </figure>}
+            </div>
+          </Card>;
+        })}
+      </div>
+    </Section>
 
     <Section eyebrow="SISTEMA DE PUNTOS" title="Participar más. Participar mejor." description="Los puntos representan actividad real. Repetir mensajes o generar spam no mejora una participación."><div className="grid gap-4 md:grid-cols-2">{pointsRules.map((rule, index) => <Card className="flex gap-5 p-6" key={rule.label}><div className="grid size-12 shrink-0 place-items-center border border-[#8b6637]/50 bg-[#9b6222]/10 text-[#d5a85f]">{index < 2 ? <MessageCircle size={20}/> : <Radio size={20}/>}</div><div><div className="flex items-center gap-3"><h3 className="font-serif text-xl text-[#dbc39a]">{rule.label}</h3><Badge>{rule.points} puntos</Badge></div><p className="mt-2 text-sm leading-6 text-[#7f7567]">{rule.detail}</p></div></Card>)}</div><Card className="mt-5 border-[#72532e]/50 p-6"><div className="flex gap-4"><ShieldCheck className="shrink-0 text-[#c69a53]"/><p className="text-sm leading-7 text-[#918572]"><strong className="text-[#d4bd96]">Regla fundamental:</strong> SotaKun, como propietario del canal, queda excluido del ranking. El sistema busca reconocer constancia y aportaciones de calidad, no volumen artificial.</p></div></Card></Section>
 

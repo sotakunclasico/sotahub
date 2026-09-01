@@ -34,7 +34,15 @@ export const giveawayHistory = [
     winner: "franciscorodriguez-p8k",
     username: "@franciscorodriguez-p8k",
     alternates: ["@segundo.1", "@ghelsonoviedo", "@afroosamuray"],
-    note: "Sorteo realizado el 23 de agosto de 2026 con 79 usuarios elegibles y 177 participaciones. El ganador tenía 42,5 puntos y 8 participaciones.",
+    note: "La extracción realizada el 23 de agosto de 2026 seleccionó a @franciscorodriguez-p8k entre 79 usuarios elegibles y 177 participaciones. Tras la resolución final, el premio fue entregado a Afro Gaming.",
+    fulfillment: {
+      status: "delivered",
+      recipient: "Afro Gaming",
+      username: "@afroosamuray",
+      reward: "Jump King",
+      evidenceImage: "/assets/giveaways/400-prize-delivered.webp",
+      evidenceAlt: "Comprobante de entrega del premio del sorteo de 400 suscriptores a Afro Gaming, que eligió Jump King",
+    },
   },
   {
     milestone: 500,
