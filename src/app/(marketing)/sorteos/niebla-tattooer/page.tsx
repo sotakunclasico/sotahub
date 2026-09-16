@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Section } from "@/components/ui/section";
 import { getNieblaGiveawayStatus, nieblaGiveaway } from "@/features/giveaways/niebla-giveaway.config";
+import { marianoFulfillment } from "@/features/giveaways/mariano-fulfillment.config";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,9 @@ export default function NieblaGiveawayRulesPage() {
         <ShieldCheck className="mx-auto text-[#a7bd78]" size={27}/>
         <Badge className="mt-4">SORTEO COMPLETADO</Badge>
         <h2 className="mt-4 font-serif text-3xl text-[#dec397]">Ganador: @{result.winner.username}</h2>
+        <p className="mx-auto mt-4 max-w-3xl text-sm leading-7 text-[#c9b28e]">Premio entregado. {marianoFulfillment.description}</p>
+        <p className="mx-auto mt-3 max-w-3xl text-xs leading-6 text-[#8f816d]">Esta resolución excepcional acordada con el ganador queda registrada por transparencia; las condiciones originales del sorteo se conservan a continuación.</p>
+        <a href={marianoFulfillment.receiptImage} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm text-[#c9aa75] underline underline-offset-4">Ver comprobante original del canje</a>
         <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-[#8f816d]">La extracción se registró el 31 de agosto de 2026 a las 22:01, hora de Madrid, con {result.eligibleUsers} usuarios elegibles y {result.totalEntries} participaciones. Suplentes por orden: {result.alternates.map((alternate) => `@${alternate.username}`).join(", ")}.</p>
       </Card>
     </section>

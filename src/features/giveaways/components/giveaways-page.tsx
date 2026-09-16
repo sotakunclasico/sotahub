@@ -38,6 +38,7 @@ export function GiveawaysPage({ youtube, adminPanel }: { youtube: YouTubeSnapsho
                   <h3 className="mt-3 font-serif text-2xl text-[#dec69d]">{entry.title}</h3>
                   <p className="mt-2 text-sm text-[#9a8b75]">Premio: <strong className="text-[#c9aa75]">{fulfillment?.reward ?? entry.prize}</strong></p>
                   <p className="mt-2 text-sm leading-6 text-[#776d60]">{entry.note}</p>
+                  {fulfillment && "description" in fulfillment && entry.note !== fulfillment.description && <p className="mt-2 text-sm leading-6 text-[#9a8b75]">{fulfillment.description}</p>}
                   {entry.alternates.length > 0 && <p className="mt-2 text-xs leading-6 text-[#71685c]">Suplentes de la extracción: {entry.alternates.join(", ")}</p>}
                 </div>
                 <div className="min-w-52 border-l border-[#6f5636]/40 pl-6 md:text-right">
@@ -50,6 +51,7 @@ export function GiveawaysPage({ youtube, adminPanel }: { youtube: YouTubeSnapsho
                   <Image src={fulfillment.evidenceImage} alt={fulfillment.evidenceAlt} fill sizes="(max-width: 1024px) 100vw, 304px" className="object-cover"/>
                 </div>
                 <figcaption className="flex items-center justify-center gap-2 px-3 py-3 text-center text-[10px] font-bold tracking-widest text-[#91bfe5] uppercase"><BadgeCheck size={14}/> Comprobante de entrega</figcaption>
+                {"receiptImage" in fulfillment && <a href={fulfillment.receiptImage} target="_blank" rel="noopener noreferrer" className="block pb-3 text-center text-xs text-[#c9aa75] underline underline-offset-4">Ver comprobante original del canje</a>}
               </figure>}
             </div>
           </Card>;

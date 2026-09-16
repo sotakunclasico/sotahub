@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Section } from "@/components/ui/section";
+import { marianoFulfillment } from "../mariano-fulfillment.config";
 import {
   getNieblaGiveawayStatus,
   nieblaGiveaway,
@@ -36,9 +37,10 @@ export function NieblaGiveawaySection() {
             <Badge className="absolute left-5 top-5"><Sparkles size={12}/> {status === "completed" ? "SORTEO COMPLETADO" : status === "open" ? "PARTICIPACIÓN ABIERTA" : status === "upcoming" ? "SORTEO PRÓXIMO" : "PARTICIPACIÓN CERRADA"}</Badge>
           </div>
           <div className="flex flex-col justify-center p-7 text-center md:p-10 lg:text-left">
-            <span className="eyebrow">RESULTADO OFICIAL</span>
+            <span className="eyebrow">RESULTADO OFICIAL · PREMIO ENTREGADO</span>
             <p className="mt-3 font-serif text-4xl text-[#e2c89b]">@{result.winner.username}</p>
-            <p className="mt-3 text-sm leading-7 text-[#8d806d]">Ganador del sorteo celebrado el 31 de agosto de 2026 a las 22:01, hora de Madrid. Dispondrá de 72 horas desde el primer aviso para responder y escoger una de las dos opciones.</p>
+            <p className="mt-3 text-sm leading-7 text-[#8d806d]">Ganador del sorteo celebrado el 31 de agosto de 2026 a las 22:01, hora de Madrid.</p>
+            <p className="mt-3 text-sm leading-7 text-[#bca580]">{marianoFulfillment.description}</p>
             <div className="mt-7 grid grid-cols-2 gap-3">
               <div className="border border-[#725532]/50 bg-black/35 p-4 text-center">
                 <p className="font-serif text-4xl text-[#d7ad68]">{result.eligibleUsers}</p>

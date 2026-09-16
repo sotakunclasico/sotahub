@@ -1,3 +1,5 @@
+import { marianoFulfillment } from "./mariano-fulfillment.config";
+
 export interface GiveawayMilestone {
   subscribers: number;
   prize: string;
@@ -23,7 +25,8 @@ export const giveawayHistory = [
     winner: "Mariano",
     username: "@marianoreppc6136",
     alternates: [],
-    note: "Ganador del sorteo y actual número 1 del ranking de participación.",
+    note: marianoFulfillment.description,
+    fulfillment: marianoFulfillment,
   },
   {
     milestone: 400,
@@ -65,6 +68,7 @@ export const giveawayHistory = [
     username: "@marianoreppc6136",
     alternates: ["@gabrielduarte766", "@simonkofoed1826", "@kuroi448"],
     note: "Sorteo realizado el 31 de agosto de 2026 a las 22:01, hora de Madrid, con 81 usuarios elegibles y 183 participaciones. El ganador tenía 204,4 puntos y 40 participaciones.",
+    fulfillment: marianoFulfillment,
   },
 ] as const;
 
