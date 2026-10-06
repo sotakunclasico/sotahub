@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from hmac import compare_digest
+import os
+from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -39,6 +41,8 @@ def health() -> dict:
         "runMode": current.get("runMode"),
         "commentEvidenceVersion": 1,
         "replayVerificationVersion": 3,
+        "youtubeSessionConfigured": bool(os.getenv("YOUTUBE_COOKIES_FILE", "").strip())
+            and Path(os.environ["YOUTUBE_COOKIES_FILE"].strip()).is_file(),
     }
 
 

@@ -56,6 +56,31 @@ class ReplayRecoveryTests(unittest.TestCase):
         download.assert_called_once()
         self.assertEqual(result["source"], "youtube")
 
+    def test_new_video_outside_recent_window_downloads_comments_and_chat(self):
+        with patch.object(community_ranking, "get_video_comments", return_value=[{"username": "new", "content": "hi"}]) as comments, \
+             patch.object(community_ranking, "download_live_chat", return_value=[["new", "hello"]]) as chat:
+            result = community_ranking.process_video(self.video, "incremental", False)
+        comments.assert_called_once_with("video-1")
+        chat.assert_called_once()
+        self.assertEqual(len(result["comments"]), 1)
+        self.assertEqual(len(result["messages"]), 1)
+
+    def test_finished_stream_recovers_chat_from_nonlive_checkpoint(self):
+        self.seed(replay_complete=False, replay_status="not-applicable")
+        with patch.object(community_ranking, "download_live_chat", return_value=[["user", "hello"]]) as chat:
+            result = community_ranking.process_video(self.video, "incremental", False)
+        chat.assert_called_once()
+        self.assertTrue(result["replay_complete"])
+
+    def test_verified_old_video_is_reused_without_network(self):
+        self.seed(replay_verification_version=community_ranking.REPLAY_VERIFICATION_VERSION)
+        with patch.object(community_ranking, "get_video_comments") as comments, \
+             patch.object(community_ranking, "download_live_chat") as chat:
+            result = community_ranking.process_video(self.video, "incremental", False)
+        comments.assert_not_called()
+        chat.assert_not_called()
+        self.assertEqual(result["source"], "checkpoint")
+
     def test_failed_download_preserves_checkpoint_and_reports_failure(self):
         self.seed(replay_complete=False)
         with patch.object(community_ranking, "download_live_chat", side_effect=RuntimeError("missing replay")):

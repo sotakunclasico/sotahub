@@ -123,7 +123,7 @@ export function RankingAdminControls({ initialState }: { initialState: Community
       <div className="border border-[#6d5334]/50 bg-black/25 p-6">
         <DatabaseBackup className="text-[#b89963]" size={25}/>
         <h3 className="mt-4 font-serif text-2xl text-[#d8bd91]">Actualizar desde backup</h3>
-        <p className="mt-3 text-sm leading-7 text-[#807565]">Reutiliza los vídeos y chats que ya tienen checkpoint, revisa los vídeos recientes y añade los cambios encontrados. Es la opción habitual y más rápida.</p>
+        <p className="mt-3 text-sm leading-7 text-[#807565]">Añade los vídeos nuevos, actualiza los comentarios recientes y recupera los chats pendientes. Reutiliza el histórico ya verificado para terminar más rápido.</p>
         <p className="mt-4 text-xs text-[#6f6557]">Última incremental: {formatRunDate(state.lastIncrementalSuccessfulRunAt)}</p>
         <Button className="mt-6" type="button" variant="secondary" onClick={() => runScan("incremental")} disabled={isRunning}>
           {activeMode === "incremental" ? <LoaderCircle className="animate-spin" size={17}/> : <DatabaseBackup size={17}/>}
@@ -134,7 +134,7 @@ export function RankingAdminControls({ initialState }: { initialState: Community
       <div className="border border-[#80603a]/60 bg-[#5b3518]/10 p-6">
         <ScanSearch className="text-[#cf9d51]" size={25}/>
         <h3 className="mt-4 font-serif text-2xl text-[#dfc499]">Escaneo completo</h3>
-        <p className="mt-3 text-sm leading-7 text-[#877967]">Recorre todos los vídeos únicos del canal y vuelve a consultar sus comentarios. Conserva los chats ya completados para no perder directos verticales u horizontales ni repetir descargas innecesarias.</p>
+        <p className="mt-3 text-sm leading-7 text-[#877967]">Revisa todos los vídeos del canal, actualiza sus comentarios y vuelve a descargar los chats disponibles. Reúne la actividad del mismo canal aunque haya cambiado de nombre.</p>
         <p className="mt-4 text-xs text-[#746858]">Último completo: {formatRunDate(state.lastFullSuccessfulRunAt)}</p>
         <Button className="mt-6" type="button" onClick={() => runScan("full")} disabled={isRunning}>
           {activeMode === "full" ? <LoaderCircle className="animate-spin" size={17}/> : <ScanSearch size={17}/>}

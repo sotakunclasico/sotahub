@@ -22,7 +22,22 @@ class PublicationTests(unittest.TestCase):
         engine = engine_module.RankingEngine(types.SimpleNamespace(youtube_api_key="private-key"), Mock())
         self.assertEqual(engine._safe_error(RuntimeError("URL?key=private-key")), "URL?key=[redacted]")
 
-    def run_engine(self, exit_code=0, backup_fails=False):
+    def test_youtube_block_has_actionable_public_message(self):
+        engine = engine_module.RankingEngine(types.SimpleNamespace(), Mock())
+        message = engine._safe_error(RuntimeError("Sign in to confirm you're not a bot"))
+        self.assertIn("YOUTUBE_COOKIES_FILE", message)
+        self.assertIn("conserva el ranking", message)
+
+    def test_render_secret_cookie_file_is_copied_for_each_job(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "cookies.txt"
+            source.write_text("# Netscape HTTP Cookie File\n", encoding="utf-8")
+            with patch.dict(engine_module.os.environ, {"YOUTUBE_COOKIES_FILE": str(source)}):
+                storage, _, _ = self.run_engine(cookie_source=source)
+            self.assertEqual(source.read_text(encoding="utf-8"), "# Netscape HTTP Cookie File\n")
+            self.assertEqual(storage.put_json.call_args_list[-1].args[1]["status"], "success")
+
+    def run_engine(self, exit_code=0, backup_fails=False, cookie_source=None):
         storage = Mock()
         storage.download.return_value = False
         old_ranking = [{"username": "old-user", "points": 5}]
@@ -40,6 +55,12 @@ class PublicationTests(unittest.TestCase):
 
         def scan(*args, **kwargs):
             workspace = Path(kwargs["cwd"])
+            if cookie_source is not None:
+                copy = Path(kwargs["env"]["YOUTUBE_COOKIES_FILE"])
+                self.assertNotEqual(copy, cookie_source)
+                self.assertEqual(copy.parent, workspace)
+                self.assertEqual(copy.read_text(), cookie_source.read_text())
+                copy.write_text("updated session", encoding="utf-8")
             for filename, value in (("community_ranking.json", new_ranking),
                                     ("community_comment_evidence.json", []),
                                     ("community_scan_report.json", {"videos": 20, "errors": int(exit_code != 0),

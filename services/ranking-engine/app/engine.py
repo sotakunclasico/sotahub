@@ -95,6 +95,13 @@ class RankingEngine:
                 "PYTHONUTF8": "1",
                 "PYTHONIOENCODING": "utf-8",
             }
+            cookie_source = os.getenv("YOUTUBE_COOKIES_FILE", "").strip()
+            if cookie_source:
+                # yt-dlp updates its cookie jar; Render secret files stay read-only.
+                cookie_path = workspace / "youtube-cookies.txt"
+                shutil.copyfile(cookie_source, cookie_path)
+                cookie_path.chmod(0o600)
+                environment["YOUTUBE_COOKIES_FILE"] = str(cookie_path)
             scanner = Path("/app/scanner/community_ranking.py")
             completed = subprocess.run(
                 ["python", str(scanner), "--mode", mode],
@@ -163,6 +170,10 @@ class RankingEngine:
 
     def _safe_error(self, error: Exception) -> str:
         message = str(error)
+        if "Sign in to confirm" in message and "bot" in message:
+            return ("YouTube ha bloqueado el acceso del servidor a los chats. "
+                    "Revisa la sesión configurada en YOUTUBE_COOKIES_FILE y el acceso desde Render. "
+                    "Se conserva el ranking publicado anteriormente.")
         for name in ("youtube_api_key", "engine_secret", "r2_access_key_id", "r2_secret_access_key"):
             value = getattr(self.settings, name, None)
             if value:

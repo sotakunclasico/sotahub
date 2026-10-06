@@ -130,6 +130,22 @@ R2. El snapshot público solo se reemplaza cuando el análisis termina sin error
 
 ## Verificación de chats e identidad (octubre de 2026)
 
+### Sesión de YouTube en Render
+
+Si YouTube solicita iniciar sesión desde Render, la clave API no sustituye la
+sesión usada para descargar replays. Configura un archivo secreto de Render
+llamado `youtube-cookies.txt`, en formato Netscape, y la variable
+`YOUTUBE_COOKIES_FILE=/etc/secrets/youtube-cookies.txt`. No añadas sus contenidos
+a Git, al chat ni a R2. Sigue las instrucciones oficiales de exportación:
+https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies
+
+Cada trabajo copia el archivo secreto a su directorio temporal con permisos
+restringidos, porque yt-dlp puede actualizarlo. La copia se elimina al finalizar
+y no se incluye en el archivo de checkpoints. `/health` informa de
+`youtubeSessionConfigured` sin revelar la sesión. Una sesión configurada no
+garantiza que YouTube permita esa IP: antes de dar el acceso por resuelto hay que
+verificar un escaneo real en Render. Si la sesión expira hay que renovarla.
+
 El modo completo vuelve a descargar los replays disponibles, incluso si existía
 un checkpoint marcado como completo. Los incrementales reintentan replays pendientes
 fuera de la ventana de comentarios recientes. Los checkpoints anteriores a la
