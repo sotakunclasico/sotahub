@@ -127,3 +127,38 @@ programador espera a la siguiente ejecución sin crear duplicados.
 
 Si el proceso se interrumpe, el siguiente trabajo recupera los checkpoints de
 R2. El snapshot público solo se reemplaza cuando el análisis termina sin errores.
+
+## Verificación de chats e identidad (octubre de 2026)
+
+El modo completo vuelve a descargar los replays disponibles, incluso si existía
+un checkpoint marcado como completo. Los incrementales reintentan replays pendientes
+fuera de la ventana de comentarios recientes. Los checkpoints anteriores a la
+versión de verificación 3 no se consideran chats verificados.
+
+Si YouTube no ofrece replay, el escáner conserva los mensajes anteriores y registra
+el vídeo como `unavailable`; no lo marca completo. Un replay anunciado cuyo archivo
+falta, está vacío o contiene JSON inválido causa un error y bloquea la publicación
+del nuevo ranking. Un análisis con replays inaccesibles no prueba la totalidad de
+la actividad histórica: revisar siempre el informe de cobertura.
+
+La extracción conserva el ID estable del canal de los autores y consulta su
+identificador público actual. Así se reúne la actividad del mismo canal aunque
+cambie de nombre. Los registros antiguos sin ID solo se reasignan cuando el alias
+observado corresponde a un único canal comprobado. No se almacenan IDs ni enlaces
+de mensajes de directo.
+
+El motor guarda el informe privado en `engine/community-scan-report.json`, con
+vídeos examinados, errores, replays inaccesibles y correspondencias de identidad.
+Antes de reemplazar un ranking público conserva una copia en
+`backups/ranking/<jobId>.json`. `/health` expone `replayVerificationVersion: 3`.
+
+Los checkpoints se suben al terminar el subproceso, incluso cuando este devuelve
+un error. Un reinicio durante el subproceso todavía puede perder los avances de
+esa ejecución; la recuperación usa el último archivo que llegó a R2.
+
+Pruebas del escáner y del flujo de publicación:
+
+```powershell
+python -m unittest discover -s scripts/community-ranking -p 'test_*.py'
+python -m unittest discover -s services/ranking-engine -p 'test_*.py'
+```

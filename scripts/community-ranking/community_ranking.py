@@ -43,6 +43,12 @@ def normalize_username(username):
     return (username or "").lower().replace("@", "").strip()
 
 
+def safe_error(error):
+    message = str(error)
+    api_key = os.getenv("YOUTUBE_API_KEY")
+    return message.replace(api_key, "[redacted]") if api_key else message
+
+
 def build_comment_url(video_id, comment_id):
     if not video_id or not comment_id:
         return None
@@ -270,8 +276,8 @@ def process_video(video, mode, refresh_comments):
         return result
     except Exception as error:
         if checkpoint:
-            return {**checkpoint, "error": str(error), "source": "stale-checkpoint"}
-        return {"video_id": video_id, "comments": [], "messages": [], "replay_complete": False, "error": str(error), "source": "error"}
+            return {**checkpoint, "error": safe_error(error), "source": "stale-checkpoint"}
+        return {"video_id": video_id, "comments": [], "messages": [], "replay_complete": False, "error": safe_error(error), "source": "error"}
     finally:
         chat_path.unlink(missing_ok=True)
 
@@ -505,4 +511,8 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as error:
+        print(safe_error(error), file=sys.stderr, flush=True)
+        sys.exit(1)

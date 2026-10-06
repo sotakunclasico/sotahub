@@ -116,6 +116,10 @@ class ReplayRecoveryTests(unittest.TestCase):
 
 
 class IdentityTests(unittest.TestCase):
+    def test_scanner_errors_redact_api_key(self):
+        with patch.dict(community_ranking.os.environ, {"YOUTUBE_API_KEY": "private-key"}):
+            self.assertEqual(community_ranking.safe_error(RuntimeError("URL?key=private-key")), "URL?key=[redacted]")
+
     def test_channel_id_unifies_changed_handles_and_comment_names(self):
         results = [{"video_id": "video-1", "comments": [{"username": "OldName", "content": "comment", "channel_id": "UC1"}],
                     "messages": [{"username": "OldHandle", "content": "old", "channel_id": "UC1"}]},
