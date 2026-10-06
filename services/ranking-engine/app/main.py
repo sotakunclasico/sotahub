@@ -38,7 +38,7 @@ def health() -> dict:
         "rankingStatus": current.get("status", "idle"),
         "runMode": current.get("runMode"),
         "commentEvidenceVersion": 1,
-        "replayVerificationVersion": 2,
+        "replayVerificationVersion": 3,
     }
 
 

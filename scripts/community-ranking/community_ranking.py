@@ -24,7 +24,7 @@ CHECKPOINT_DIRECTORY = OUTPUT_DIRECTORY / ".community-ranking-checkpoints"
 COOKIE_FILE = os.getenv("YOUTUBE_COOKIES_FILE")
 LEGACY_CONFIG_PATH = Path(os.getenv("COMMUNITY_LEGACY_CONFIG_PATH", r"C:\SotakunJson\V_Codex\Community\config.py"))
 YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3"
-REPLAY_VERIFICATION_VERSION = 2
+REPLAY_VERIFICATION_VERSION = 3
 
 
 def get_api_key():
@@ -57,6 +57,7 @@ def normalize_comment_record(comment, video_id):
             "content": comment.get("content") or "",
             "comment_id": comment_id,
             "comment_url": comment.get("comment_url") or build_comment_url(video_id, comment_id),
+            "channel_id": comment.get("channel_id"),
         }
     if isinstance(comment, (list, tuple)) and len(comment) >= 2:
         return {
@@ -152,7 +153,8 @@ def parse_live_chat(chat_path):
                 if not author or key in seen:
                     continue
                 seen.add(key)
-                messages.append((normalize_username(author), text))
+                messages.append({"username": normalize_username(author), "content": text,
+                                 "channel_id": renderer.get("authorExternalChannelId")})
     return messages
 
 
@@ -293,10 +295,64 @@ def get_video_comments(video_id):
                 "content": snippet.get("textDisplay") or "",
                 "comment_id": comment_id,
                 "comment_url": build_comment_url(video_id, comment_id),
+                "channel_id": snippet.get("authorChannelId", {}).get("value"),
             })
         page_token = payload.get("nextPageToken")
         if not page_token:
             return comments
+
+
+def normalize_message_record(message):
+    if isinstance(message, dict):
+        return {"username": normalize_username(message.get("username")),
+                "content": message.get("content") or "", "channel_id": message.get("channel_id")}
+    return {"username": normalize_username(message[0]), "content": message[1], "channel_id": None}
+
+
+def resolve_channel_usernames(channel_ids):
+    usernames = {}
+    if not channel_ids:
+        return usernames
+    api_key = get_api_key()
+    for offset in range(0, len(channel_ids), 50):
+        response = requests.get(f"{YOUTUBE_API_BASE}/channels",
+                                params={"key": api_key, "id": ",".join(channel_ids[offset:offset + 50]),
+                                        "part": "snippet", "maxResults": 50}, timeout=30)
+        response.raise_for_status()
+        for channel in response.json().get("items", []):
+            custom_url = channel.get("snippet", {}).get("customUrl")
+            if custom_url:
+                usernames[channel["id"]] = normalize_username(custom_url)
+    return usernames
+
+
+def canonicalize_identities(results):
+    observed = defaultdict(set)
+    records = []
+    for result in results:
+        comments = [normalize_comment_record(item, result["video_id"]) for item in result["comments"]]
+        comments = [item for item in comments if item]
+        messages = [normalize_message_record(item) for item in result["messages"]]
+        records.append({**result, "comments": comments, "messages": messages})
+        for item in comments + messages:
+            if item.get("channel_id") and item["username"]:
+                observed[item["channel_id"]].add(item["username"])
+    current = resolve_channel_usernames(sorted(observed))
+    canonical = {channel_id: current.get(channel_id) or sorted(names)[0]
+                 for channel_id, names in observed.items()}
+    aliases = defaultdict(set)
+    for channel_id, names in observed.items():
+        for name in names:
+            aliases[name].add(channel_id)
+    for result in records:
+        for item in result["comments"] + result["messages"]:
+            channel_id = item.get("channel_id")
+            if not channel_id and len(aliases[item["username"]]) == 1:
+                channel_id = next(iter(aliases[item["username"]]))
+            item["username"] = canonical.get(channel_id, item["username"])
+    identities = [{"channel_id": channel_id, "username": canonical[channel_id],
+                   "observed_usernames": sorted(names)} for channel_id, names in sorted(observed.items())]
+    return records, identities
 
 
 def build_outputs(results):
@@ -350,7 +406,11 @@ def build_outputs(results):
             })
 
         users_in_live = set()
-        for username, content in result["messages"]:
+        for raw_message in result["messages"]:
+            message = normalize_message_record(raw_message)
+            username, content = message["username"], message["content"]
+            if not username:
+                continue
             points[username] += 0.1
             live_messages_count[username] += 1
             activity.append({"username": username, "type": "live_message", "video_id": video_id, "points": 0.1, "content": content, "comment_id": "", "comment_url": ""})
@@ -423,6 +483,7 @@ def main():
             if result.get("source") != "checkpoint" or result["error"]:
                 print(f"[{index}/{len(videos)}] {result['video_id']}: {len(result['comments'])} comentarios, {len(result['messages'])} mensajes" + (f" · ERROR: {result['error']}" if result["error"] else ""), flush=True)
 
+    results, identities = canonicalize_identities(results)
     ranking, activity, comment_evidence = build_outputs(results)
     report = {
         "mode": args.mode,
@@ -431,6 +492,7 @@ def main():
         "errors": errors,
         "replays_unavailable": [item["video_id"] for item in results if item.get("replay_status") == "unavailable"],
         "failed_videos": [{"video_id": item["video_id"], "error": item["error"]} for item in results if item["error"]],
+        "identities": identities,
     }
     with (OUTPUT_DIRECTORY / "community_scan_report.json").open("w", encoding="utf-8") as stream:
         json.dump(report, stream, ensure_ascii=False, indent=2)

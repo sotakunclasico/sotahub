@@ -139,7 +139,7 @@ class RankingEngine:
                 "error": None,
                 "videosScanned": report.get("videos", 0),
                 "replaysUnavailable": len(report.get("replays_unavailable", [])),
-                "replayVerificationVersion": 2,
+                "replayVerificationVersion": 3,
             }
             previous_ranking = self.storage.get_json(RANKING_KEY)
             if previous_ranking is not None:

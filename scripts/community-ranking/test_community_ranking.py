@@ -104,7 +104,8 @@ class ReplayRecoveryTests(unittest.TestCase):
         replay = self.directory / "replay.json"
         replay.write_text("\n".join(json.dumps(item) for item in
                                    [action("1", "hello"), action("1", "hello"), action("2", "hello")]), encoding="utf-8")
-        self.assertEqual(community_ranking.parse_live_chat(replay), [("user", "hello"), ("user", "hello")])
+        self.assertEqual(community_ranking.parse_live_chat(replay),
+                         [{"username": "user", "content": "hello", "channel_id": None}] * 2)
 
     def test_migration_does_not_mark_unknown_chats_complete(self):
         (self.directory / "community_activity_log.csv").write_text(
@@ -112,6 +113,37 @@ class ReplayRecoveryTests(unittest.TestCase):
         community_ranking.seed_checkpoints_from_activity_log([self.video, {"video_id": "video-2"}])
         for video_id in ("video-1", "video-2"):
             self.assertFalse(community_ranking.load_checkpoint(self.directory / f"{video_id}.json")["replay_complete"])
+
+
+class IdentityTests(unittest.TestCase):
+    def test_channel_id_unifies_changed_handles_and_comment_names(self):
+        results = [{"video_id": "video-1", "comments": [{"username": "OldName", "content": "comment", "channel_id": "UC1"}],
+                    "messages": [{"username": "OldHandle", "content": "old", "channel_id": "UC1"}]},
+                   {"video_id": "video-2", "comments": [],
+                    "messages": [{"username": "NewHandle", "content": "new", "channel_id": "UC1"}]}]
+        with patch.object(community_ranking, "resolve_channel_usernames", return_value={"UC1": "newhandle"}):
+            normalized, identities = community_ranking.canonicalize_identities(results)
+        ranking, _, _ = community_ranking.build_outputs(normalized)
+        self.assertEqual(len(ranking), 1)
+        self.assertEqual(ranking[0]["username"], "newhandle")
+        self.assertEqual(ranking[0]["points"], 7.2)
+        self.assertEqual(identities[0]["observed_usernames"], ["newhandle", "oldhandle", "oldname"])
+
+    def test_ambiguous_legacy_name_is_not_assigned_to_either_channel(self):
+        results = [{"video_id": "video-1", "comments": [], "messages": [
+            {"username": "shared", "content": "a", "channel_id": "UC1"},
+            {"username": "shared", "content": "b", "channel_id": "UC2"},
+            ["shared", "legacy"]]}]
+        with patch.object(community_ranking, "resolve_channel_usernames", return_value={"UC1": "one", "UC2": "two"}):
+            normalized, _ = community_ranking.canonicalize_identities(results)
+        self.assertEqual([item["username"] for item in normalized[0]["messages"]], ["one", "two", "shared"])
+
+    def test_unique_legacy_alias_uses_verified_channel(self):
+        results = [{"video_id": "video-1", "comments": [], "messages": [
+            {"username": "old", "content": "a", "channel_id": "UC1"}, ["old", "legacy"]]}]
+        with patch.object(community_ranking, "resolve_channel_usernames", return_value={"UC1": "new"}):
+            normalized, _ = community_ranking.canonicalize_identities(results)
+        self.assertEqual([item["username"] for item in normalized[0]["messages"]], ["new", "new"])
 
 
 class CommentEvidenceTests(unittest.TestCase):
