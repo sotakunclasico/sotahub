@@ -152,7 +152,7 @@ class RankingEngine:
                 failed = {
                     **running,
                     "status": "failed",
-                    "error": str(error)[:4000],
+                    "error": self._safe_error(error)[:4000],
                 }
                 self.storage.put_json(STATE_KEY, failed)
             except Exception:
@@ -160,6 +160,14 @@ class RankingEngine:
         finally:
             shutil.rmtree(workspace, ignore_errors=True)
             self._lock.release()
+
+    def _safe_error(self, error: Exception) -> str:
+        message = str(error)
+        for name in ("youtube_api_key", "engine_secret", "r2_access_key_id", "r2_secret_access_key"):
+            value = getattr(self.settings, name, None)
+            if value:
+                message = message.replace(value, "[redacted]")
+        return message
 
     def _upload_checkpoints(self, workspace: Path, archive: Path) -> None:
         checkpoint_directory = workspace / ".community-ranking-checkpoints"

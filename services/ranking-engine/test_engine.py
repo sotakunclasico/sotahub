@@ -18,6 +18,10 @@ with patch.dict(sys.modules, {"app.storage": storage_stub}):
 
 
 class PublicationTests(unittest.TestCase):
+    def test_public_error_does_not_expose_api_credentials(self):
+        engine = engine_module.RankingEngine(types.SimpleNamespace(youtube_api_key="private-key"), Mock())
+        self.assertEqual(engine._safe_error(RuntimeError("URL?key=private-key")), "URL?key=[redacted]")
+
     def run_engine(self, exit_code=0, backup_fails=False):
         storage = Mock()
         storage.download.return_value = False
