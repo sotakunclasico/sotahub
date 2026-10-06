@@ -24,6 +24,7 @@ CHECKPOINT_DIRECTORY = OUTPUT_DIRECTORY / ".community-ranking-checkpoints"
 COOKIE_FILE = os.getenv("YOUTUBE_COOKIES_FILE")
 LEGACY_CONFIG_PATH = Path(os.getenv("COMMUNITY_LEGACY_CONFIG_PATH", r"C:\SotakunJson\V_Codex\Community\config.py"))
 YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3"
+REPLAY_VERIFICATION_VERSION = 2
 
 
 def get_api_key():
@@ -75,6 +76,7 @@ def quiet_options():
         "socket_timeout": 30,
         "retries": 3,
         "fragment_retries": 3,
+        "skip_unavailable_fragments": False,
     }
     if COOKIE_FILE:
         options["cookiefile"] = COOKIE_FILE
@@ -132,14 +134,16 @@ def parse_live_chat(chat_path):
     messages = []
     seen = set()
     if not chat_path.exists():
-        return messages
+        raise RuntimeError(f"No se generó el archivo de replay: {chat_path.name}")
+    if chat_path.stat().st_size == 0:
+        raise RuntimeError(f"El archivo de replay está vacío: {chat_path.name}")
 
     with chat_path.open("r", encoding="utf-8") as stream:
         for line in stream:
             try:
                 action = json.loads(line)
             except json.JSONDecodeError:
-                continue
+                raise RuntimeError(f"Replay inválido en {chat_path.name}")
             for renderer in renderer_from_action(action):
                 message_id = renderer.get("id")
                 author = renderer.get("authorName", {}).get("simpleText", "")
@@ -204,7 +208,7 @@ def seed_checkpoints_from_activity_log(channel_videos):
             "video_id": video_id,
             "comments": activity["comments"],
             "messages": activity["messages"],
-            "replay_complete": True,
+            "replay_complete": False,
             "updated_at": activity_path.stat().st_mtime,
             "error": None,
             "source": "activity-log-migration",
@@ -217,7 +221,11 @@ def download_live_chat(video_id, chat_path):
     output_template = str(CACHE_DIRECTORY / f"{video_id}.%(ext)s")
     options = {**quiet_options(), "writesubtitles": True, "subtitleslangs": ["live_chat"], "outtmpl": output_template}
     with YoutubeDL(options) as ydl:
-        ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=True)
+        info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=True)
+    if not info:
+        raise RuntimeError(f"YouTube no devolvió información para {video_id}")
+    if not info.get("subtitles", {}).get("live_chat"):
+        return None
     messages = parse_live_chat(chat_path)
     time.sleep(float(os.getenv("COMMUNITY_RANKING_REPLAY_DELAY", "1")))
     return messages
@@ -229,21 +237,29 @@ def process_video(video, mode, refresh_comments):
     checkpoint = load_checkpoint(checkpoint_path)
     chat_path = CACHE_DIRECTORY / f"{video_id}.live_chat.json"
 
-    if checkpoint and mode == "incremental" and not refresh_comments:
+    replay_complete = bool(checkpoint and checkpoint.get("replay_complete")
+                           and checkpoint.get("replay_verification_version") == REPLAY_VERIFICATION_VERSION)
+    needs_replay = bool(video.get("has_replay") and (mode == "full" or not replay_complete))
+    if checkpoint and mode == "incremental" and not refresh_comments and not needs_replay:
         return {**checkpoint, "error": None, "source": "checkpoint"}
 
     try:
         comments = get_video_comments(video_id) if mode == "full" or refresh_comments or not checkpoint else checkpoint.get("comments", [])
         messages = checkpoint.get("messages", []) if checkpoint else []
-        replay_complete = bool(checkpoint and checkpoint.get("replay_complete", video.get("has_replay", False)))
-        if video.get("has_replay") and not replay_complete:
-            messages = download_live_chat(video_id, chat_path)
-            replay_complete = True
+        replay_status = "complete" if replay_complete else "not-applicable"
+        if needs_replay:
+            downloaded_messages = download_live_chat(video_id, chat_path)
+            replay_complete = downloaded_messages is not None
+            replay_status = "complete" if replay_complete else "unavailable"
+            if replay_complete:
+                messages = downloaded_messages
         result = {
             "video_id": video_id,
             "comments": comments,
             "messages": messages,
             "replay_complete": replay_complete,
+            "replay_verification_version": REPLAY_VERIFICATION_VERSION if replay_complete else None,
+            "replay_status": replay_status,
             "updated_at": time.time(),
             "error": None,
             "source": "youtube",
@@ -408,6 +424,17 @@ def main():
                 print(f"[{index}/{len(videos)}] {result['video_id']}: {len(result['comments'])} comentarios, {len(result['messages'])} mensajes" + (f" · ERROR: {result['error']}" if result["error"] else ""), flush=True)
 
     ranking, activity, comment_evidence = build_outputs(results)
+    report = {
+        "mode": args.mode,
+        "completed_at": time.time(),
+        "videos": len(videos),
+        "errors": errors,
+        "replays_unavailable": [item["video_id"] for item in results if item.get("replay_status") == "unavailable"],
+        "failed_videos": [{"video_id": item["video_id"], "error": item["error"]} for item in results if item["error"]],
+    }
+    with (OUTPUT_DIRECTORY / "community_scan_report.json").open("w", encoding="utf-8") as stream:
+        json.dump(report, stream, ensure_ascii=False, indent=2)
+    print(f"Replays no disponibles: {len(report['replays_unavailable'])}", flush=True)
     export(ranking, activity, comment_evidence, partial=errors > 0)
     shutil.rmtree(CACHE_DIRECTORY, ignore_errors=True)
     elapsed = time.perf_counter() - started

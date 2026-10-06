@@ -13,7 +13,7 @@ from typing import Literal
 from uuid import uuid4
 
 from .settings import Settings
-from .storage import COMMENT_EVIDENCE_KEY, CHECKPOINTS_KEY, RANKING_KEY, STATE_KEY, RankingStorage
+from .storage import COMMENT_EVIDENCE_KEY, CHECKPOINTS_KEY, RANKING_KEY, STATE_KEY, SCAN_REPORT_KEY, RankingStorage
 
 
 ScanMode = Literal["incremental", "full"]
@@ -108,6 +108,9 @@ class RankingEngine:
             )
 
             self._upload_checkpoints(workspace, archive)
+            report_path = workspace / "community_scan_report.json"
+            report = json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else {}
+            self.storage.put_json(SCAN_REPORT_KEY, {**report, "jobId": running["jobId"]})
 
             if completed.returncode != 0:
                 tail = (completed.stderr or completed.stdout)[-3000:].strip()
@@ -134,7 +137,13 @@ class RankingEngine:
                 "status": "success",
                 "entries": len(ranking),
                 "error": None,
+                "videosScanned": report.get("videos", 0),
+                "replaysUnavailable": len(report.get("replays_unavailable", [])),
+                "replayVerificationVersion": 2,
             }
+            previous_ranking = self.storage.get_json(RANKING_KEY)
+            if previous_ranking is not None:
+                self.storage.put_json(f"backups/ranking/{running['jobId']}.json", previous_ranking)
             self.storage.put_json(COMMENT_EVIDENCE_KEY, comment_evidence)
             self.storage.put_json(RANKING_KEY, ranking)
             self.storage.put_json(STATE_KEY, success)
